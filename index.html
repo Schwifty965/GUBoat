@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>สตูดิโอเขียนบทด้วยเสียง V10.1 (Final)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Itim&family=Mitr:wght@400;500&family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --font-main: 'IBM Plex Sans Thai', -apple-system, sans-serif; --bg: #f8f9fa; --surface: #ffffff; --text-primary: #212529; --text-secondary: #6c757d; --border: #dee2e6; --primary: #0d6efd; --danger: #dc3545; --success: #198754; --warning: #ffc107; --info: #0dcaf0; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); --radius: 12px; }
+        [data-theme="dark"] { --bg: #121212; --surface: #1e1e1e; --text-primary: #e0e0e0; --text-secondary: #a0a0a0; --border: #333333; --primary: #4dabf7; }
+        * { box-sizing: border-box; }
+        body { font-family: var(--font-main); background-color: var(--bg); color: var(--text-primary); margin: 0; padding: 2rem; transition: background-color 0.3s, color 0.3s; }
+        .container { width: 100%; max-width: 960px; display: flex; flex-direction: column; gap: 1.5rem; }
+        h2, h3 { text-align: center; margin: 0 0 1rem 0; font-weight: 600; }
+        #main-toolbar { background: var(--surface); padding: 1rem; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; font-family: inherit; font-size: 0.95rem; padding: 10px 18px; cursor: pointer; border: 1px solid transparent; border-radius: 8px; color: white; font-weight: 500; transition: all 0.2s ease; }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+        #toggleButton { background-color: var(--success); }
+        #toggleButton.recording { background-color: var(--danger); }
+        #correctTextButton, #copyButton, #undoButton, #redoButton, #clearButton { background-color: var(--text-secondary); }
+        .gemini-btn { background: linear-gradient(45deg, #4285F4, #9B72CB); }
+        #editor-wrapper { position: relative; }
+        #output { width: 100%; height: 450px; font-size: 18px; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; line-height: 1.8; box-sizing: border-box; background-color: var(--surface); color: var(--text-primary); box-shadow: var(--shadow); resize: vertical; transition: font-size 0.2s, font-family 0.2s; }
+        #stats-bar { position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; color: var(--text-secondary); background-color: rgba(255, 255, 255, 0.8); padding: 2px 8px; border-radius: 4px; }
+        [data-theme="dark"] #stats-bar { background-color: rgba(0, 0, 0, 0.5); }
+        #shortcut-zone { background-color: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; }
+        .char-btn-wrapper { display: inline-block; position: relative; margin: 4px; }
+        .char-btn { background-color: var(--warning); color: #333; padding: 8px 14px; cursor: grab; font-weight: 500; }
+        .delete-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: -8px; right: -8px; background-color: var(--danger); color: white; border-radius: 50%; width: 20px; height: 20px; border: none; cursor: pointer; font-size: 14px; opacity: 0; transition: all 0.2s; }
+        .char-btn-wrapper:hover .delete-btn { opacity: 1; transform: scale(1.1); }
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .card { background: var(--surface); padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .input-group { display: flex; gap: 0.75rem; align-items: center; }
+        .input-group input, .input-group select { width: 100%; flex-grow: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; background-color: var(--bg); color: var(--text-primary); }
+        /* เพิ่มสไตล์สำหรับ textarea ภายใน input-group */
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            resize: vertical; /* อนุญาตให้ปรับขนาดแนวตั้งได้ */
+        }
+        #add-char-btn, #add-correction-btn { background-color: var(--info); }
+        #save-api-key-btn { background-color: var(--primary); }
+        #correction-list { list-style-type: none; padding: 0; margin-top: 1rem; max-height: 120px; overflow-y: auto; }
+        .correction-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid var(--border); position: relative; }
+        #theme-toggle { position: fixed; top: 1rem; right: 1rem; background-color: var(--surface); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; box-shadow: var(--shadow); color: var(--text-secondary); }
+
+        /* Modal Styles */
+        .loading-overlay, .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; 
+            z-index: 1000; backdrop-filter: blur(5px); transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .loading-overlay.show, .modal-overlay.show {
+            opacity: 1; visibility: visible; display: flex;
+        }
+
+        #message-modal, #confirm-modal {
+            background-color: var(--surface); color: var(--text-primary); padding: 2rem; border-radius: var(--radius); 
+            width: 90%; max-width: 400px; text-align: center; display: flex; flex-direction: column; align-items: center;
+        }
+        #message-content, #confirm-content { margin-bottom: 1rem; white-space: pre-wrap; text-align: center; }
+        #confirm-modal .button-group { display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; width: 100%; }
+
+        /* Button styles for confirm modal */
+        #confirm-modal #confirm-yes-btn {
+            flex: 1; min-width: 80px;
+            background: linear-gradient(135deg, #6DD5ED, #2193B0); /* Blue gradient */
+            color: white; border: none; box-shadow: 0 4px 10px rgba(33, 147, 176, 0.4);
+        }
+        #confirm-modal #confirm-yes-btn:hover { background: linear-gradient(135deg, #2193B0, #6DD5ED); }
+
+        #confirm-modal #confirm-no-btn {
+            flex: 1; min-width: 80px;
+            background: linear-gradient(135deg, #DA2C3A, #8A0707); /* Red gradient */
+            color: white; border: none; box-shadow: 0 4px 10px rgba(138, 7, 7, 0.4);
+        }
+        #confirm-modal #confirm-no-btn:hover { background: linear-gradient(135deg, #8A0707, #DA2C3A); }
+        /* End Button styles */
+
+        .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #4285F4; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin-bottom: 1rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #review-modal { background-color: var(--surface); color: var(--text-primary); padding: 2rem; border-radius: var(--radius); width: 90%; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column; }
+        #review-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; border: 1px solid var(--border); border-radius: 8px; }
+        .review-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid var(--border); }
+        .review-item.rejected { opacity: 0.5; text-decoration: line-through; }
+        .review-text { flex-grow: 1; }
+        .review-text .original { color: var(--danger); text-decoration: line-through; }
+        .review-text .corrected { color: var(--success); font-weight: 500; }
+        .review-actions .action-btn { background: none; border: 1px solid var(--border); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+        .review-actions .action-btn.accept { color: var(--success); }
+        .review-actions .action-btn.reject { color: var(--danger); }
+        .review-actions .action-btn:hover { background-color: var(--bg); }
+        #review-footer { margin-top: 1.5rem; text-align: right; }
+
+        .font-size-btn {
+            font-weight: bold; width: 40px; height: 40px; padding: 0; flex-shrink: 0;
+            background-color: var(--surface); color: var(--text-primary); border: 1px solid var(--border);
+            display: flex; justify-content: center; align-items: center;
+        }
+        #font-size-display { font-size: 1rem; font-weight: 500; min-width: 30px; text-align: center; }
+
+        /* AI History Log */
+        #ai-history-log {
+            margin-top: 1.5rem; max-height: 300px; overflow-y: auto; display: flex; flex-direction: column;
+            gap: 1rem; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius);
+            background-color: var(--bg);
+        }
+        .ai-history-entry {
+            padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius);
+            background-color: var(--surface); box-shadow: var(--shadow);
+        }
+        .ai-response-content { white-space: pre-wrap; margin-bottom: 0.75rem; font-size: 0.95rem; line-height: 1.6; }
+
+        /* YouTube Player Section */
+        #youtube-player-container {
+            margin-top: 1rem; width: 100%; height: 250px; background-color: #000; border-radius: 8px;
+            overflow: hidden; display: flex; justify-content: center; align-items: center;
+        }
+        #youtube-player-container iframe { width: 100%; height: 100%; border-radius: 8px; }
+        #youtube-player-controls {
+            display: flex; justify-content: center; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap;
+        }
+        #youtube-player-controls .btn {
+            background-color: var(--primary); color: white; padding: 8px 15px; font-size: 0.9rem;
+        }
+        #youtube-single-search-group { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; align-items: stretch; }
+
+        /* API Key Status */
+        #api-key-status {
+            text-align: center; margin-top: 0.5rem; font-size: 0.85rem; padding: 5px 10px;
+            border-radius: 6px; font-weight: 500;
+        }
+        #api-key-status.set { background-color: var(--success); color: white; }
+        #api-key-status.unset { background-color: var(--danger); color: white; }
+
+        /* YouTube Queue List */
+        #youtube-queue-list {
+            max-height: 200px; overflow-y: auto; padding: 1rem; border: 1px solid var(--border);
+            border-radius: var(--radius); background-color: var(--bg); margin-top: 1rem; line-height: 1.5;
+        }
+        .youtube-queue-item {
+            padding: 8px 10px; border-bottom: 1px dashed var(--border); display: flex;
+            align-items: center; gap: 0.5rem; cursor: pointer; transition: background-color 0.2s ease;
+        }
+        .youtube-queue-item:last-child { border-bottom: none; }
+        .youtube-queue-item:hover { background-color: rgba(108, 117, 125, 0.1); }
+        .youtube-queue-item.current-playing {
+            font-weight: bold; color: var(--primary); background-color: #e6f2ff; border-radius: 4px;
+        }
+        [data-theme="dark"] .youtube-queue-item.current-playing { background-color: #1a2a40; }
+        .youtube-queue-item span { flex-grow: 1; }
+        .youtube-queue-item .index { font-size: 0.8em; color: var(--text-secondary); min-width: 20px; text-align: right; }
+    </style>
+</head>
+<body>
+    
+    <button id="theme-toggle">🌙</button>
+
+    <div class="container">
+        <h2>สตูดิโอเขียนบทด้วยเสียง</h2>
+        <div id="main-toolbar">
+            <button id="undoButton" class="btn" title="ย้อนกลับ">↩️ ย้อนกลับ</button>
+            <button id="redoButton" class="btn" title="เดินหน้า">↪️ เดินหน้า</button>
+            <button id="toggleButton" class="btn">🎙️ เริ่มพูด</button>
+            <button id="correctTextButton" class="btn" title="แก้คำผิด (พจนานุกรม)">✍️ แก้คำผิด</button>
+            <button id="copyButton" class="btn" title="คัดลอกทั้งหมด">📋 คัดลอก</button>
+            <button id="clearButton" class="btn" title="ล้างข้อความ">🗑️ ล้างข้อความ</button>
+        </div>
+        <div id="editor-wrapper">
+            <textarea id="output" placeholder="..."></textarea>
+            <div id="stats-bar"><span>จำนวนคำ: <span id="word-count">0</span></span> | <span>จำนวนตัวอักษร: <span id="char-count">0</span></span></div>
+        </div>
+        <div id="shortcut-zone" class="card"><h3>ปุ่มลัดตัวละคร</h3></div>
+        <div class="settings-grid">
+            <div id="character-manager" class="card">
+                <h3>จัดการตัวละคร</h3>
+                <div class="input-group">
+                    <input type="text" id="character-input" placeholder="พิมพ์ชื่อตัวละคร...">
+                    <button id="add-char-btn" class="btn">เพิ่ม</button>
+                </div>
+            </div>
+            <div id="view-manager" class="card">
+                <h3>ปรับแต่งการแสดงผล</h3>
+                <div id="font-controls" class="input-group">
+                    <select id="font-selector">
+                                <option value="'Sarabun', -apple-system, sans-serif">Sarabun (Default)</option>
+                                <option value="'IBM Plex Sans Thai', sans-serif">IBM Plex Sans Thai</option>
+                                <option value="'Mitr', sans-serif">Mitr</option>
+                                <option value="'Itim', cursive">Itim</option>
+                    </select>
+                    <button id="font-size-down" class="btn font-size-btn">-</button>
+                    <span id="font-size-display">18</span>
+                    <button id="font-size-up" class="btn font-size-btn">+</button>
+                </div>
+            </div>
+            <div id="ai-tools" class="card">
+                <h3>✨ เครื่องมือผู้ช่วย AI</h3>
+                <div class="input-group" style="justify-content: center; gap: 10px;">
+                    <button id="proofreadButton" class="btn gemini-btn">ตรวจคำผิดด้วย AI</button>
+                    <button id="rephraseButton" class="btn gemini-btn">ขยายความ</button>
+                    <button id="titleButton" class="btn gemini-btn">คิดชื่อตอน</button>
+                </div>
+                <div class="input-group" style="flex-direction: column; align-items: stretch; margin-top: 1rem;">
+                    <textarea id="custom-ai-prompt-input" placeholder="พิมพ์คำสั่งสำหรับ AI ที่นี่ (เช่น 'สรุปเนื้อหานี้', 'แก้ไขไวยากรณ์', 'เขียนใหม่ให้กระชับ')... โดย AI จะใช้ข้อความในกล่องหลักเป็นข้อมูลประกอบ" rows="4"></textarea>
+                    <button id="send-custom-prompt-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">ส่งคำสั่ง AI</button>
+                </div>
+                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">ประวัติการตอบกลับ AI</h4>
+                <div id="ai-history-log">
+                    <p style="text-align: center; color: var(--text-secondary);">ไม่มีประวัติการตอบกลับ AI</p>
+                </div>
+                <button id="clear-ai-history-btn" class="btn" style="background-color: var(--danger); margin-top: 1rem;">🗑️ ล้างประวัติ AI</button>
+            </div>
+            <div id="api-key-manager" class="card">
+                <h3>ตั้งค่า Gemini API Key</h3>
+                <div class="input-group">
+                    <input type="password" id="api-key-input" placeholder="วาง API Key ของคุณที่นี่">
+                    <button id="save-api-key-btn" class="btn">บันทakhึก</button>
+                </div>
+                <div id="api-key-status">
+                    </div>
+                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">เพลย์ลิสต์ YouTube</h4>
+                <div class="input-group" style="flex-direction: column; align-items: stretch;">
+                    <input type="text" id="youtube-playlist-input" placeholder="วาง URL เพลย์ลิสต์ YouTube ที่นี่">
+                    <button id="load-youtube-playlist-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">โหลดเพลย์ลิสต์</button>
+                </div>
+                <div id="youtube-player-container">
+                    </div>
+                <div id="youtube-player-controls">
+                    <button id="prev-song-btn" class="btn">⏮️ ก่อนหน้า</button>
+                    <button id="play-pause-btn" class="btn">▶️ เล่น</button>
+                    <button id="next-song-btn" class="btn">⏭️ ถัดไป</button>
+                    <button id="shuffle-playlist-btn" class="btn">🔀 สุ่ม</button>
+                </div>
+                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">เล่นเพลงเดี่ยว</h4>
+                <div id="youtube-single-search-group" class="input-group">
+                    <input type="text" id="youtube-single-search-input" placeholder="วาง URL วิดีโอ YouTube หรือพิมพ์ชื่อเพลง">
+                    <button id="play-single-song-btn" class="btn gemini-btn">🔍 ค้นหาและเล่น</button>
+                </div>
+                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">คิวเพลงในเพลย์ลิสต์</h4>
+                <div id="youtube-queue-list" class="card">
+                    <p style="text-align: center; color: var(--text-secondary);">ไม่มีเพลย์ลิสต์ที่โหลดอยู่ หรือไม่สามารถแสดงชื่อเพลงได้หากไม่มี YouTube Data API Key</p>
+                </div>
+            </div>
+        </div>
+        <div id="dictionary-manager" class="card">
+            <h3>จัดการพจนานุกรม</h3>
+            <div class="input-group">
+                <input type="text" id="wrong-word-input" placeholder="คำที่ผิด">
+                <input type="text" id="correct-word-input" placeholder="คำที่ถูก">
+                <button id="add-correction-btn" class="btn">เพิ่ม</button>
+            </div>
+            <ul id="correction-list"></ul>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>AI กำลังคิด...</p>
+    </div>
+
+    <div id="review-modal-overlay" class="modal-overlay">
+        <div id="review-modal">
+            <h3>✨ AI ตรวจคำผิด</h3>
+            <ul id="review-list"></ul>
+            <div id="review-footer">
+                <button id="apply-changes-btn" class="btn gemini-btn">นำการเปลี่ยนแปลงไปใช้</button>
+                <button id="cancel-review-btn" class="btn" style="background-color: var(--text-secondary);">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="message-modal-overlay" class="modal-overlay">
+        <div id="message-modal">
+            <p id="message-content"></p>
+            <button id="message-ok-btn" class="btn gemini-btn" style="margin-top: 1rem;">ตกลง</button>
+        </div>
+    </div>
+
+    <div id="confirm-modal-overlay" class="modal-overlay">
+        <div id="confirm-modal">
+            <p id="confirm-content"></p>
+            <div class="button-group">
+                <button id="confirm-yes-btn" class="btn gemini-btn">ใช่</button>
+                <button id="confirm-no-btn" class="btn" style="background-color: var(--text-secondary);">ไม่</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ส่วนที่ 1: การตั้งค่าและการเลือก DOM Elements ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const toggleButton = document.getElementById('toggleButton');
+        const output = document.getElementById('output');
+        const undoButton = document.getElementById('undoButton');
+        const redoButton = document.getElementById('redoButton');
+        const clearButton = document.getElementById('clearButton');
+        const copyButton = document.getElementById('copyButton');
+        const correctTextButton = document.getElementById('correctTextButton');
+        const wrongWordInput = document.getElementById('wrong-word-input');
+        const correctWordInput = document.getElementById('correct-word-input');
+        const addCorrectionBtn = document.getElementById('add-correction-btn');
+        const correctionList = document.getElementById('correction-list');
+        const charInput = document.getElementById('character-input');
+        const addCharBtn = document.getElementById('add-char-btn');
+        const shortcutZone = document.getElementById('shortcut-zone');
+        const wordCountEl = document.getElementById('word-count');
+        const charCountEl = document.getElementById('char-count');
+        const fontSelector = document.getElementById('font-selector');
+        const fontSizeDownBtn = document.getElementById('font-size-down');
+        const fontSizeUpBtn = document.getElementById('font-size-up');
+        const fontSizeDisplay = document.getElementById('font-size-display');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const proofreadButton = document.getElementById('proofreadButton');
+        const rephraseButton = document.getElementById('rephraseButton');
+        const titleButton = document.getElementById('titleButton');
+        const reviewModalOverlay = document.getElementById('review-modal-overlay');
+        const reviewList = document.getElementById('review-list');
+        const applyChangesBtn = document.getElementById('apply-changes-btn');
+        const cancelReviewBtn = document.getElementById('cancel-review-btn');
+        const customAiPromptInput = document.getElementById('custom-ai-prompt-input');
+        const sendCustomPromptBtn = document.getElementById('send-custom-prompt-btn');
+        const aiHistoryLog = document.getElementById('ai-history-log');    
+        const clearAiHistoryBtn = document.getElementById('clear-ai-history-btn');    
+        
+        // สำหรับ YouTube Player
+        const youtubePlaylistInput = document.getElementById('youtube-playlist-input');
+        const loadYoutubePlaylistBtn = document.getElementById('load-youtube-playlist-btn');
+        const youtubePlayerContainer = document.getElementById('youtube-player-container');
+        const prevSongBtn = document.getElementById('prev-song-btn');    
+        const playPauseBtn = document.getElementById('play-pause-btn');    
+        const nextSongBtn = document.getElementById('next-song-btn');    
+        const shufflePlaylistBtn = document.getElementById('shuffle-playlist-btn');    
+        const youtubeSingleSearchInput = document.getElementById('youtube-single-search-input');    
+        const playSingleSongBtn = document.getElementById('play-single-song-btn');    
+        const youtubeQueueList = document.getElementById('youtube-queue-list');    
+        
+        const apiKeyStatus = document.getElementById('api-key-status');    
+
+        let player; // ตัวแปรสำหรับ YouTube Player
+
+        // สำหรับ Modal แจ้งเตือน/ยืนยัน
+        const messageModalOverlay = document.getElementById('message-modal-overlay');
+        const messageContent = document.getElementById('message-content');
+        const messageOkBtn = document.getElementById('message-ok-btn');
+        const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
+        const confirmContent = document.getElementById('confirm-content');
+        const confirmYesBtn = document.getElementById('confirm-yes-btn');
+        const confirmNoBtn = document.getElementById('confirm-no-btn');
+        let confirmCallback = null;
+
+        let characters = [];
+        let corrections = {};
+        let draggedItem = null;
+        let geminiApiKey = '';
+        let currentFontSize = 18;
+
+        // --- Undo/Redo History ---
+        let history = [];
+        let historyIndex = -1;
+        const MAX_HISTORY_SIZE = 100; // จำกัดขนาดประวัติเพื่อป้องกันปัญหาหน่วยความจำ
+
+        function saveState() {
+            // หากไม่ได้อยู่ที่ท้ายสุดของประวัติ (เช่น มีการ Undo มาก่อน)
+            // ให้ลบสถานะที่อยู่ข้างหน้าทั้งหมดก่อนเพิ่มสถานะใหม่
+            if (historyIndex < history.length - 1) {
+                history.splice(historyIndex + 1);
+            }
+
+            // เพิ่มสถานะปัจจุบัน
+            history.push(output.value);
+
+            // จำกัดขนาดประวัติ
+            if (history.length > MAX_HISTORY_SIZE) {
+                history.shift(); // ลบสถานะที่เก่าที่สุด
+            } else {
+                historyIndex++;
+            }
+            updateUndoRedoButtons();
+        }
+
+        function loadState(index) {
+            if (index >= 0 && index < history.length) {
+                // หลีกเลี่ยงการบันทึกสถานะซ้ำเมื่อโหลด
+                const tempOutputOnInput = output.oninput;
+                output.oninput = null;
+
+                output.value = history[index];
+                output.dispatchEvent(new Event('input')); // อัปเดตสถิติและบันทึกเนื้อหา
+                output.focus();
+                historyIndex = index;
+                updateUndoRedoButtons();
+                
+                // คืนค่า event listener เดิมกลับมา
+                setTimeout(() => {
+                    output.oninput = tempOutputOnInput;
+                }, 0);
+            }
+        }
+
+        function updateUndoRedoButtons() {
+            undoButton.disabled = historyIndex <= 0;
+            redoButton.disabled = historyIndex >= history.length - 1;
+        }
+
+        // --- ฟังก์ชันสำหรับ Modal แจ้งเตือน/ยืนยันแบบ Custom ---
+        function showMessage(message) {
+            messageContent.textContent = message;
+            messageModalOverlay.style.display = 'flex';
+        }
+        messageOkBtn.onclick = () => {
+            messageModalOverlay.style.display = 'none';
+        };
+
+        function showConfirm(message, callback) {
+            confirmContent.textContent = message;
+            confirmCallback = callback;
+            confirmModalOverlay.style.display = 'flex';
+        }
+        confirmYesBtn.onclick = () => {
+            if (confirmCallback) {
+                confirmCallback(true);
+            }
+            confirmModalOverlay.style.display = 'none';
+        };
+        confirmNoBtn.onclick = () => {
+            if (confirmCallback) {
+                confirmCallback(false);
+            }
+            confirmModalOverlay.style.display = 'none';
+        };
+
+
+        // --- ส่วนที่ 2: โค้ดส่วน Speech Recognition ---
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            let isRecording = false;
+            let beforeSelection = '';
+            let afterSelection = '';
+            recognition.continuous = true;
+            recognition.lang = 'th-TH';
+            recognition.interimResults = true;
+            toggleButton.onclick = () => {    
+                if (isRecording) {    
+                    recognition.stop();    
+                } else {    
+                    beforeSelection = output.value.substring(0, output.selectionStart);    
+                    afterSelection = output.value.substring(output.selectionEnd);    
+                    if (output.selectionStart === output.selectionEnd && beforeSelection.length > 0 && !beforeSelection.endsWith(' ')) {    
+                        beforeSelection += ' ';    
+                    }    
+                    recognition.start();    
+                }    
+            };
+            recognition.onresult = event => {    
+                let final_transcript = '';    
+                let interim_transcript = '';    
+                for (let i = 0; i < event.results.length; ++i) {    
+                    if (event.results[i].isFinal) {    
+                        final_transcript += event.results[i][0].transcript;    
+                    } else {    
+                        interim_transcript += event.results[i][0].transcript;    
+                    }    
+                }    
+                output.value = beforeSelection + final_transcript + interim_transcript + afterSelection;    
+                output.scrollTop = output.scrollHeight;    
+            };
+            recognition.onstart = () => {    
+                isRecording = true;    
+                toggleButton.textContent = '⏹️ หยุดพูด';    
+                toggleButton.classList.add('recording');    
+                output.focus();    
+            };
+            recognition.onend = () => {    
+                isRecording = false;    
+                toggleButton.textContent = '🎙️ เริ่มพูด';    
+                toggleButton.classList.remove('recording');    
+                output.dispatchEvent(new Event('input'));    
+                saveState(); // บันทึกสถานะหลังจากการพูดสิ้นสุด
+            };
+            recognition.onerror = event => {    
+                console.error("Speech recognition error:", event.error);    
+                isRecording = false;    
+                toggleButton.textContent = '🎙️ Error';    
+                showMessage("เกิดข้อผิดพลาดในการรับเสียง: " + event.error);    
+            };
+        } else {
+            document.querySelector('.container').innerHTML = '<h2>ขออภัย เบราว์เซอร์ของคุณไม่รองรับฟังก์ชันพิมพ์ด้วยเสียง</h2>';
+        }
+
+        // --- ส่วนที่ 3: ฟังก์ชัน Gemini API ---
+        function showLoading(show) { loadingOverlay.style.display = show ? 'flex' : 'none'; }
+        async function callGeminiAPI(prompt, jsonSchema = null) {
+            if (!geminiApiKey) { showMessage("กรุณาตั้งค่า Gemini API Key ก่อนใช้งานครับ"); return null; }
+            showLoading(true);
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+            if (jsonSchema) { payload.generationConfig = { responseMimeType: "application/json", responseSchema: jsonSchema }; }
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error.message || `HTTP error! status: ${response.status}`); }
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content.parts[0].text) { return data.candidates[0].content.parts[0].text; } else { return "ไม่ได้รับคำตอบจาก AI หรือคำตอบมีรูปแบบที่ไม่ถูกต้อง"; }
+            } catch (error) {    
+                console.error("Gemini API Error:", error);    
+                showMessage("เกิดข้อผิดพลาดในการเชื่อมต่อกับ Gemini API: " + error.message);    
+                return null;    
+            } finally {    
+                showLoading(false);    
+            }
+        }
+
+        // ฟังก์ชันสำหรับเพิ่มการตอบกลับ AI ลงในประวัติ
+        function addAiResponseToHistory(promptUsed, aiResponse) {
+            // ลบข้อความ "ไม่มีประวัติการตอบกลับ AI" ถ้ามี
+            const noHistoryMsg = aiHistoryLog.querySelector('p');
+            if (noHistoryMsg && noHistoryMsg.textContent === 'ไม่มีประวัติการตอบกลับ AI') {
+                aiHistoryLog.innerHTML = '';
+            }
+
+            const responseEntry = document.createElement('div');
+            responseEntry.className = 'ai-history-entry card'; // ใช้ card style
+            responseEntry.innerHTML = `
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                    <strong>คุณสั่ง AI:</strong> "${promptUsed}"
+                    <span style="float: right;">${new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <div class="ai-response-content">${aiResponse}</div>
+                <button class="btn gemini-btn copy-ai-response-btn" style="padding: 8px 12px; font-size: 0.85rem;">📋 คัดลอกไปกล่องหลัก</button>
+            `;
+            aiHistoryLog.prepend(responseEntry); // เพิ่มรายการล่าสุดไว้ด้านบนสุด
+            aiHistoryLog.scrollTop = 0; // เลื่อนไปด้านบนสุดเมื่อมีรายการใหม่
+
+            // เพิ่ม Event Listener สำหรับปุ่มคัดลอกในรายการใหม่
+            responseEntry.querySelector('.copy-ai-response-btn').onclick = () => {
+                output.value = aiResponse;
+                output.dispatchEvent(new Event('input')); // อัปเดตสถิติและบันทึกเนื้อหา
+                saveState(); // บันทึกสถานะหลังการคัดลอก
+                showMessage("คัดลอกข้อความ AI ไปยังกล่องหลักแล้วครับ!");
+            };
+        }
+
+        // ฟังก์ชันสำหรับล้างประวัติ AI
+        clearAiHistoryBtn.onclick = () => {
+            showConfirm("คุณต้องการล้างประวัติการตอบกลับ AI ทั้งหมดหรือไม่?", (confirmed) => {
+                if (confirmed) {
+                    aiHistoryLog.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">ไม่มีประวัติการตอบกลับ AI</p>';
+                    showMessage("ล้างประวัติการตอบกลับ AI แล้วครับ!");
+                }
+            });
+        };
+
+        proofreadButton.onclick = async () => {
+            const text = output.value;
+            if (!text.trim()) return showMessage("กรุณาพิมพ์เนื้อเรื่องก่อนใช้ AI ตรวจคำผิดครับ");
+            const schema = { type: "ARRAY", items: { type: "OBJECT", properties: { original: { type: "STRING" }, corrected: { type: "STRING" }, reason: { type: "STRING" } }, required: ["original", "corrected", "reason"] } };
+            const prompt = `ทำหน้าที่เป็นบรรณาธิการภาษาไทยมืออาชีพ วิเคราะห์ข้อความต่อไปนี้และหาจุดที่สะกดผิดหรือใช้ไวยากรณ์ผิดพลาด สำหรับแต่ละจุดที่พบ ให้ส่งคืนข้อมูลเป็นอาร์เรย์ของอ็อบเจ็กต์ JSON ที่มี key: "original", "corrected", และ "reason" เท่านั้น ห้ามส่งคืนข้อมูลอื่นใดนอกเหนือจากอาร์เรย์ JSON\n\n---\n${text}\n---`;
+            const resultJson = await callGeminiAPI(prompt, schema);
+            if (resultJson) {    
+                try {    
+                    const suggestions = JSON.parse(resultJson);    
+                    if (suggestions.length === 0) {    
+                        showMessage("✨ ยอดเยี่ยม! AI ไม่พบคำผิดในสคริปต์ของคุณครับ");    
+                        return;    
+                    }    
+                    displayReviewModal(suggestions);    
+                } catch (e) {    
+                    showMessage("ไม่สามารถอ่านผลลัพธ์จาก AI ได้:\n" + resultJson);    
+                }    
+            }
+        };
+        function displayReviewModal(suggestions) {
+            reviewList.innerHTML = '';
+            suggestions.forEach((s, index) => {
+                const item = document.createElement('li');
+                item.className = 'review-item';
+                item.dataset.index = index;
+                item.dataset.original = s.original;
+                item.dataset.corrected = s.corrected;
+                item.dataset.status = 'accepted';
+                item.innerHTML = `<div class="review-text"><span class="original">${s.original}</span> → <span class="corrected">${s.corrected}</span><div style="font-size: 0.8em; color: var(--text-secondary);">${s.reason}</div></div><div class="review-actions"><button class="action-btn accept" title="ยอมรับ">✅</button><button class="action-btn reject" title="ปฏิเสธ">❌</button></div>`;
+                reviewList.appendChild(item);
+            });
+            reviewModalOverlay.style.display = 'flex';
+        }
+        reviewList.addEventListener('click', (e) => {    
+            if (e.target.classList.contains('action-btn')) {    
+                const item = e.target.closest('.review-item');    
+                if (e.target.classList.contains('accept')) {    
+                    item.dataset.status = 'accepted';    
+                    item.classList.remove('rejected');    
+                } else if (e.target.classList.contains('reject')) {    
+                    item.dataset.status = 'rejected';    
+                    item.classList.add('rejected');    
+                }    
+            }    
+        });
+        applyChangesBtn.onclick = () => {    
+            let text = output.value;    
+            const items = reviewList.querySelectorAll('.review-item'); 
+            items.forEach(item => { 
+                if (item.dataset.status === 'accepted') { 
+                    text = text.replaceAll(item.dataset.original, item.dataset.corrected); 
+                } 
+            }); 
+            output.value = text; 
+            output.dispatchEvent(new Event('input')); 
+            saveState(); // บันทึกสถานะหลังการแก้ไข
+            reviewModalOverlay.style.display = 'none'; 
+            showMessage("นำการเปลี่ยนแปลงไปใช้แล้วครับ!"); 
+        };
+        cancelReviewBtn.onclick = () => { reviewModalOverlay.style.display = 'none'; };
+
+        rephraseButton.onclick = async () => {
+            const selectedText = output.value.substring(output.selectionStart, output.selectionEnd);
+            if (!selectedText.trim()) return showMessage("กรุณาลากคลุมข้อความที่ต้องการให้ AI ขยายความก่อนครับ");
+            
+            const prompt = `โปรดขยายความหรือเขียนประโยคต่อไปนี้ใหม่ให้น่าตื่นเต้นและดึงดูดใจมากขึ้น โดยคงใจความเดิมไว้:\n\n"${selectedText}"`;
+            const result = await callGeminiAPI(prompt);
+            if (result) {
+                addAiResponseToHistory(`ขยายความ: "${selectedText}"`, result);
+            }
+        };
+
+        titleButton.onclick = async () => {
+            const text = output.value;
+            if (!text.trim()) return showMessage("กรุณาพิมพ์เนื้อเรื่องก่อนสร้างชื่อตอนครับ");
+            
+            const prompt = `จากบทสปอยอนิเมะต่อไปนี้ โปรดช่วยคิดชื่อตอนที่น่าสนใจและดึงดูดผู้ชมมา 5 ชื่อ โดยไม่ต้องใส่คำว่า "ชื่อตอน" หรือ "ตอนที่" นำหน้า และไม่ต้องใช้สัญลักษณ์หัวข้อย่อย:\n\n---\n${text}\n---`;
+            const result = await callGeminiAPI(prompt);
+            if (result) {
+                const formattedResult = `--- 🎬 ชื่อตอนที่ AI แนะนำ ---\n${result}\n---------------------------\n\n`;
+                addAiResponseToHistory("คิดชื่อตอน", formattedResult);
+            }
+        };
+
+        // ฟังก์ชันสำหรับปุ่มส่งคำสั่ง AI แบบกำหนดเอง
+        sendCustomPromptBtn.onclick = async () => {
+            const customPromptText = customAiPromptInput.value.trim();
+            const mainContentText = output.value.trim();
+
+            if (!customPromptText) {
+                showMessage("กรุณาพิมพ์คำสั่งสำหรับ AI ก่อนครับ");
+                return;
+            }
+            if (!mainContentText) {
+                showMessage("กรุณาพิมพ์เนื้อหาในกล่องข้อความหลักก่อนครับ เพื่อให้ AI มีข้อมูลสำหรับประมวลผล");
+                return;
+            }
+
+            // สร้าง prompt ที่รวมคำสั่งและเนื้อหาหลัก
+            const fullPrompt = `${customPromptText}\n\n--- ข้อความที่เกี่ยวข้อง ---\n${mainContentText}\n---`;
+
+            const result = await callGeminiAPI(fullPrompt);
+            if (result) {
+                addAiResponseToHistory(customPromptText, result);
+                customAiPromptInput.value = ''; // ล้างช่องคำสั่งหลังจากส่ง
+            }
+        };
+        
+        // --- ส่วนที่ 4: ฟังก์ชันการทำงานอื่นๆ ทั้งหมด ---
+        const currentTheme = localStorage.getItem('theme');    
+        if (currentTheme) {    
+            document.documentElement.setAttribute('data-theme', currentTheme);    
+            if (currentTheme === 'dark') themeToggle.textContent = '☀️';    
+        }
+        themeToggle.onclick = () => {    
+            let theme = document.documentElement.getAttribute('data-theme');    
+            if (theme === 'dark') {    
+                document.documentElement.setAttribute('data-theme', 'light');    
+                localStorage.setItem('theme', 'light');    
+                themeToggle.textContent = '🌙';    
+            } else {    
+                document.documentElement.setAttribute('data-theme', 'dark');    
+                localStorage.setItem('theme', 'dark');    
+                themeToggle.textContent = '☀️';    
+            }    
+        };
+        copyButton.onclick = () => {    
+            output.select();    
+            document.execCommand('copy');    
+            showMessage("คัดลอกข้อความทั้งหมดแล้วครับ!");    
+        };    
+        
+        // เปลี่ยนการทำงานของ Undo/Redo ไปใช้ history stack ที่สร้างเอง
+        undoButton.onclick = () => {
+            if (historyIndex > 0) {
+                loadState(historyIndex - 1);
+            }
+        };
+        redoButton.onclick = () => {
+            if (historyIndex < history.length - 1) {
+                loadState(historyIndex + 1);
+            }
+        };
+
+        function renderCorrections() {    
+            correctionList.innerHTML = '';    
+            for (const wrong in corrections) {    
+                const correct = corrections[wrong];    
+                const item = document.createElement('li');    
+                item.className = 'correction-item';    
+                const textSpan = document.createElement('span');    
+                textSpan.textContent = `'${wrong}' → '${correct}'`;    
+                item.appendChild(textSpan);    
+                const deleteBtn = document.createElement('button');    
+                deleteBtn.className = 'delete-btn';    
+                deleteBtn.innerHTML = '&times;';    
+                deleteBtn.title = "ลบคำผิดนี้";    
+                deleteBtn.onclick = () => deleteCorrection(wrong);    
+                item.appendChild(deleteBtn);    
+                correctionList.appendChild(item);    
+            }    
+        }
+        function addCorrection() { 
+            const wrong = wrongWordInput.value.trim(); 
+            const correct = correctWordInput.value.trim(); 
+            if (wrong && correct) { 
+                corrections[wrong] = correct; 
+                wrongWordInput.value = ''; 
+                correctWordInput.value = ''; 
+                saveCorrections(); 
+                renderCorrections(); 
+            } 
+        }
+        function deleteCorrection(wrongWord) { 
+            delete corrections[wrongWord]; 
+            saveCorrections(); 
+            renderCorrections(); 
+        }
+        function saveCorrections() { 
+            localStorage.setItem('userCorrectionsV4', JSON.stringify(corrections)); 
+        }
+        function loadCorrections() { 
+            const saved = localStorage.getItem('userCorrectionsV4'); 
+            const defaultCorrections = { "สถานการ": "สถานการณ์", "3ารถ": "สามารถ" }; 
+            corrections = saved ? JSON.parse(saved) : defaultCorrections; 
+            renderCorrections(); 
+        }
+        addCorrectionBtn.onclick = addCorrection;
+        function applyCorrections() { 
+            let text = output.value; 
+            const changesMade = []; 
+            for (const wrongWord in corrections) { 
+                const correctWord = corrections[wrongWord]; 
+                const regex = new RegExp(wrongWord, "g"); 
+                if (text.match(regex)) { 
+                    const count = text.match(regex).length; 
+                    text = text.replace(regex, correctWord); 
+                    changesMade.push(`'${wrongWord}' → '${correctWord}' (${count} ครั้ง)`); 
+                } 
+            } 
+            if (changesMade.length > 0) { 
+                output.value = text; 
+                output.dispatchEvent(new Event('input')); 
+                saveState(); // บันทึกสถานะหลังการแก้ไข
+                showMessage("รายการที่แก้ไข:\n\n" + changesMade.join("\n")); 
+            } else { 
+                showMessage("ไม่พบคำผิดที่อยู่ในพจนานุกรมครับ"); 
+            } 
+        }
+        correctTextButton.onclick = applyCorrections;
+        function renderButtons() { 
+            shortcutZone.innerHTML = ''; 
+            characters.forEach((char, index) => { 
+                const wrapper = document.createElement('div'); 
+                wrapper.className = 'char-btn-wrapper'; 
+                wrapper.draggable = true; 
+                wrapper.dataset.index = index; 
+                const charBtn = document.createElement('button'); 
+                charBtn.className = 'btn char-btn'; 
+                charBtn.textContent = char; 
+                wrapper.appendChild(charBtn); 
+                const deleteBtn = document.createElement('button'); 
+                deleteBtn.className = 'delete-btn'; 
+                deleteBtn.innerHTML = '&times;'; 
+                deleteBtn.title = "ลบตัวละครนี้"; 
+                deleteBtn.onclick = e => { e.stopPropagation(); deleteCharacter(index); }; 
+                wrapper.appendChild(deleteBtn); 
+                wrapper.onclick = () => { 
+                    const selectionStart = output.selectionStart; 
+                    const selectionEnd = output.selectionEnd; 
+                    const charText = `${char} `; 
+                    if (selectionStart !== selectionEnd) { 
+                        output.value = output.value.substring(0, selectionStart) + charText + output.value.substring(selectionEnd); 
+                        output.selectionStart = output.selectionEnd = selectionStart + charText.length; 
+                    } else { 
+                        output.value += charText; 
+                        output.scrollTop = output.scrollHeight; 
+                    } 
+                    output.focus(); 
+                    output.dispatchEvent(new Event('input')); 
+                    saveState(); // บันทึกสถานะหลังการแทรกตัวละคร
+                }; 
+                shortcutZone.appendChild(wrapper); 
+            }); 
+        }
+        function addCharacter() { 
+            const newChar = charInput.value.trim(); 
+            if (newChar && !characters.includes(newChar)) { 
+                characters.push(newChar); 
+                charInput.value = ''; 
+                saveCharacters(); 
+                renderButtons(); 
+            } 
+        }
+        function deleteCharacter(index) { 
+            characters.splice(index, 1); 
+            saveCharacters(); 
+            renderButtons(); 
+        }
+        function saveCharacters() { 
+            localStorage.setItem('animeCharactersV4', JSON.stringify(characters)); 
+        }
+        function loadCharacters() { 
+            const savedChars = localStorage.getItem('animeCharactersV4'); 
+            if (savedChars) { 
+                characters = JSON.parse(savedChars); 
+                renderButtons(); 
+            } 
+        }
+        shortcutZone.addEventListener("dragstart", e => { draggedItem = e.target; setTimeout(() => e.target.style.display = "none", 0); });
+        shortcutZone.addEventListener("dragend", e => { setTimeout(() => { e.target.style.display = "inline-block"; draggedItem = null; const newOrder = Array.from(shortcutZone.querySelectorAll(".char-btn")).map(btn => btn.textContent); characters = newOrder; saveCharacters(); }, 0); });
+        shortcutZone.addEventListener("dragover", e => { e.preventDefault(); const afterElement = getDragAfterElement(shortcutZone, e.clientX); if (afterElement == null) { shortcutZone.appendChild(draggedItem); } else { shortcutZone.insertBefore(draggedItem, afterElement); } });
+        function getDragAfterElement(container, x) { 
+            const draggables = [...container.querySelectorAll('.char-btn-wrapper:not(.dragging)')]; 
+            return draggables.reduce((closest, child) => { 
+                const box = child.getBoundingClientRect(); 
+                const offset = x - box.left - box.width / 2; 
+                if (offset < 0 && offset > closest.offset) return { offset: offset, element: child }; 
+                else return closest; 
+            }, { offset: Number.NEGATIVE_INFINITY }).element; 
+        }
+        addCharBtn.onclick = addCharacter;
+        charInput.addEventListener("keyup", e => { if (e.key === "Enter") addCharacter(); });
+        function updateStats() { 
+            const text = output.value; 
+            charCountEl.textContent = text.length; 
+            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length; 
+            wordCountEl.textContent = words; 
+        }
+        function applySettings(font, size) { 
+            output.style.fontFamily = font; 
+            output.style.fontSize = `${size}px`; 
+            fontSizeDisplay.textContent = size; 
+        }
+        function saveSettings(font, size) { 
+            localStorage.setItem('editorFontFamily', font); 
+            localStorage.setItem('editorFontSize', size); 
+        }
+        function loadSettings() { 
+            const savedFont = localStorage.getItem('editorFontFamily') || "'Sarabun', -apple-system, sans-serif"; 
+            const savedSize = parseInt(localStorage.getItem('editorFontSize')) || 18; 
+            currentFontSize = savedSize; 
+            fontSelector.value = savedFont; 
+            applySettings(savedFont, savedSize); 
+        }
+        fontSelector.onchange = () => { 
+            const selectedFont = fontSelector.value; 
+            applySettings(selectedFont, currentFontSize); 
+            saveSettings(selectedFont, currentFontSize); 
+        };
+        fontSizeUpBtn.onclick = () => { 
+            currentFontSize += 2; 
+            applySettings(fontSelector.value, currentFontSize); 
+            saveSettings(fontSelector.value, currentFontSize); 
+        };
+        fontSizeDownBtn.onclick = () => { 
+            if (currentFontSize > 10) { 
+                currentFontSize -= 2; 
+                applySettings(fontSelector.value, currentFontSize); 
+                saveSettings(fontSelector.value, currentFontSize); 
+            } 
+        };
+        function saveContent() { 
+            localStorage.setItem('scriptContentV4', output.value); 
+        }
+        function loadContent() { 
+            const savedText = localStorage.getItem('scriptContentV4'); 
+            if (savedText) output.value = savedText; 
+        }
+        
+        // เพิ่ม Event Listener สำหรับ input เพื่อบันทึกสถานะการพิมพ์
+        output.addEventListener('input', () => { 
+            updateStats(); 
+            saveContent(); 
+            // ตรวจสอบว่าการเปลี่ยนแปลงเกิดจากการพิมพ์ของผู้ใช้ ไม่ใช่จากโค้ด
+            // เพื่อไม่ให้ saveState ถูกเรียกซ้ำซ้อนเมื่อ loadState() ถูกเรียก
+            // หรือเมื่อมีการเปลี่ยนแปลง output.value จากฟังก์ชันอื่น
+            if (output.value !== history[historyIndex]) {
+                saveState();
+            }
+        });
+        
+        // เพิ่ม Event Listener สำหรับการวางข้อความ
+        output.addEventListener('paste', () => {
+            // setTimeout เพื่อให้ค่า output.value อัปเดตก่อนบันทึกสถานะ
+            setTimeout(() => {
+                saveState();
+            }, 0);
+        });
+
+        clearButton.onclick = () => {
+            showConfirm("คุณต้องการล้างข้อความทั้งหมดหรือไม่?", (confirmed) => {
+                if (confirmed) {
+                    output.value = '';
+                    saveContent();
+                    output.dispatchEvent(new Event('input'));
+                    saveState(); // บันทึกสถานะหลังการล้าง
+                }
+            });
+        };
+
+        window.addEventListener('mousedown', e => { if (e.button === 4) { e.preventDefault(); toggleButton.click(); } });
+        
+        saveApiKeyBtn.onclick = () => { 
+            const key = apiKeyInput.value.trim(); 
+            if (key) { 
+                localStorage.setItem('geminiApiKey', key); 
+                geminiApiKey = key; 
+                updateApiKeyStatus(); // อัปเดตสถานะ API Key
+                showMessage("API Key ถูกบันทึกแล้ว!"); 
+            } else {
+                showMessage("กรุณาใส่ API Key ครับ");
+            }
+        };
+        function loadApiKey() { 
+            const savedKey = localStorage.getItem('geminiApiKey'); 
+            if (savedKey) { 
+                geminiApiKey = savedKey; 
+                console.log("Gemini API Key loaded."); 
+            } 
+            updateApiKeyStatus(); // อัปเดตสถานะ API Key เมื่อโหลด
+        }
+
+        function updateApiKeyStatus() {
+            if (geminiApiKey) {
+                apiKeyStatus.textContent = "สถานะ: API Key ตั้งค่าแล้ว ✅";
+                apiKeyStatus.className = "set";
+            } else {
+                apiKeyStatus.textContent = "สถานะ: ยังไม่ได้ตั้งค่า API Key ❌";
+                apiKeyStatus.className = "unset";
+            }
+        }
+
+        // --- YouTube Player Functions (Updated based on your old code) ---
+        function getPlaylistIdFromUrl(url) {
+            try {
+                const urlParams = new URLSearchParams(new URL(url).search);
+                return urlParams.get('list');
+            } catch (e) {
+                return null; // Invalid URL
+            }
+        }
+
+        function getVideoIdFromUrl(url) {
+            const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            return videoIdMatch && videoIdMatch[1] ? videoIdMatch[1] : null;
+        }
+
+        function loadYouTubeIframeAPI() {
+            if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                const firstScriptTag = document.getElementsByTagName('script')[0];
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            } else {
+                window.onYouTubeIframeAPIReady();
+            }
+        }
+
+        window.onYouTubeIframeAPIReady = function() {
+            const savedPlaylistUrl = localStorage.getItem('youtubePlaylistUrl');
+            if (savedPlaylistUrl) {
+                youtubePlaylistInput.value = savedPlaylistUrl;
+                const playlistId = getPlaylistIdFromUrl(savedPlaylistUrl);
+                if (playlistId) {
+                    createYouTubePlayer(playlistId);
+                } else {
+                    // If it's a single video URL saved
+                    const videoId = getVideoIdFromUrl(savedPlaylistUrl);
+                    if (videoId) {
+                        createYouTubePlayer(null, videoId);
+                    } else {
+                        // If saved URL is invalid or not a valid video/playlist, show initial message
+                        youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">กรุณาโหลดเพลย์ลิสต์หรือค้นหาเพลง</p>';
+                    }
+                }
+            } else {
+                // Show initial message if no playlist/video saved
+                youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">กรุณาโหลดเพลย์ลิสต์หรือค้นหาเพลง</p>';
+            }
+        };
+
+        function createYouTubePlayer(playlistId = null, videoId = null) {
+            if (player) {
+                player.destroy(); // Destroy old player if exists
+            }
+            
+            youtubePlayerContainer.innerHTML = ''; // Clear existing content (including thumbnail/message)
+            
+            const playerDiv = document.createElement('div');
+            playerDiv.id = 'youtube-iframe-player'; // Assign ID for YouTube Player
+            youtubePlayerContainer.appendChild(playerDiv); // Append new player div
+
+            const playerVars = {
+                autoplay: 1,
+                controls: 1,
+                modestbranding: 1,
+                rel: 0
+            };
+
+            if (playlistId) {
+                playerVars.listType = 'playlist';
+                playerVars.list = playlistId;
+            } else if (videoId) {
+                playerVars.videoId = videoId;
+            } else {
+                // If neither playlistId nor videoId is provided, revert to initial message
+                youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">กรุณาโหลดเพลย์ลิสต์หรือค้นหาเพลง</p>';
+                return;
+            }
+
+            player = new YT.Player('youtube-iframe-player', {
+                height: '100%',
+                width: '100%',
+                playerVars: playerVars,
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange,
+                    'onError': onPlayerError
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+            showMessage("เพลย์ลิสต์/เพลง YouTube โหลดและเริ่มเล่นแล้วครับ!");
+            updatePlayPauseButton();
+            updateYoutubeQueueList();
+        }
+
+        function onPlayerStateChange(event) {
+            updatePlayPauseButton();
+            if (event.data === YT.PlayerState.ENDED) {
+                if (player.getPlaylist && player.getPlaylist() && player.getPlaylist().length > 0) {
+                    // YouTube API handles next video in playlist automatically
+                    updateYoutubeQueueList();
+                }
+            } else if (event.data === YT.PlayerState.PLAYING) {
+                updateYoutubeQueueList();
+            }
+        }
+
+        function updatePlayPauseButton() {
+            if (player && typeof player.getPlayerState === 'function') {
+                const playerState = player.getPlayerState();
+                if (playerState === YT.PlayerState.PLAYING || playerState === YT.PlayerState.BUFFERING) {
+                    playPauseBtn.textContent = '⏸️ หยุด';
+                } else {
+                    playPauseBtn.textContent = '▶️ เล่น';
+                }
+            }
+        }
+
+        function onPlayerError(event) {
+            let errorMessage = "เกิดข้อผิดพลาดกับ YouTube Player: ";
+            switch(event.data) {
+                case 2:
+                    errorMessage += "ID วิดีโอ/เพลย์ลิสต์ไม่ถูกต้อง หรือมีข้อจำกัดอื่นๆ";
+                    break;
+                case 100:
+                    errorMessage += "ไม่พบวิดีโอ";
+                    break;
+                case 101:
+                case 150:
+                    errorMessage += "วิดีโอไม่สามารถเล่นได้ในตำแหน่งปัจจุบัน (อาจมีข้อจำกัดด้านลิขสิทธิ์)";
+                    break;
+                default:
+                    errorMessage += "ข้อผิดพลาดที่ไม่ทราบสาเหตุ";
+            }
+            showMessage(errorMessage);
+            console.error("YouTube Player Error:", event.data);
+            // After an error, clear the player and show the initial message
+            youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">' + errorMessage + '<br>กรุณาโหลดเพลย์ลิสต์หรือค้นหาเพลงใหม่</p>';
+        }
+
+        loadYoutubePlaylistBtn.onclick = () => {
+            const url = youtubePlaylistInput.value.trim();
+            if (!url) {
+                showMessage("กรุณาวาง URL เพลย์ลิสต์ YouTube ก่อนครับ");
+                return;
+            }
+            const playlistId = getPlaylistIdFromUrl(url);
+            if (playlistId) {
+                createYouTubePlayer(playlistId);
+                localStorage.setItem('youtubePlaylistUrl', url);
+            } else {
+                showMessage("URL เพลย์ลิสต์ YouTube ไม่ถูกต้องหรือไม่พบ ID เพลย์ลิสต์ครับ");
+            }
+        };
+
+        prevSongBtn.onclick = () => {
+            if (player && typeof player.previousVideo === 'function' && player.getPlaylist && player.getPlaylist() && player.getPlaylist().length > 0) {
+                player.previousVideo();
+            } else {
+                showMessage("YouTube Player ยังไม่พร้อมใช้งาน หรือไม่มีเพลย์ลิสต์ที่กำลังเล่นอยู่ครับ");
+            }
+        };
+
+        playPauseBtn.onclick = () => {
+            if (player && typeof player.getPlayerState === 'function') {
+                const playerState = player.getPlayerState();
+                if (playerState === YT.PlayerState.PLAYING || playerState === YT.PlayerState.BUFFERING) {
+                    player.pauseVideo();
+                } else {
+                    player.playVideo();
+                }
+                updatePlayPauseButton();
+            } else {
+                showMessage("YouTube Player ยังไม่พร้อมใช้งานครับ");
+            }
+        };
+
+        nextSongBtn.onclick = () => {
+            if (player && typeof player.nextVideo === 'function' && player.getPlaylist && player.getPlaylist() && player.getPlaylist().length > 0) {
+                player.nextVideo();
+            } else {
+                showMessage("YouTube Player ยังไม่พร้อมใช้งาน หรือไม่มีเพลย์ลิสต์ที่กำลังเล่นอยู่ครับ");
+            }
+        };
+
+        shufflePlaylistBtn.onclick = () => {
+            if (player && typeof player.setShuffle === 'function' && player.getPlaylist && player.getPlaylist() && player.getPlaylist().length > 0) {
+                const currentShuffle = player.getShuffle();
+                player.setShuffle(!currentShuffle);
+                showMessage(`โหมดสุ่ม: ${!currentShuffle ? 'เปิด' : 'ปิด'}`);
+            } else {
+                showMessage("YouTube Player ยังไม่พร้อมใช้งาน หรือไม่มีเพลย์ลิสต์ที่กำลังเล่นอยู่ครับ");
+            }
+        };
+
+        playSingleSongBtn.onclick = () => {
+            const searchTerm = youtubeSingleSearchInput.value.trim();
+            if (!searchTerm) {
+                showMessage("กรุณาวาง URL วิดีโอ YouTube หรือพิมพ์ชื่อเพลงที่ต้องการค้นหาครับ");
+                return;
+            }
+
+            const videoId = getVideoIdFromUrl(searchTerm);
+            if (videoId) {
+                createYouTubePlayer(null, videoId);
+                localStorage.setItem('youtubePlaylistUrl', searchTerm);
+            } else {
+                const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`;
+                window.open(searchUrl, '_blank');
+                showMessage("ไม่สามารถเล่นเพลงเดี่ยวจากชื่อเพลงโดยตรงได้ครับ กรุณาวาง URL วิดีโอ YouTube หรือค้นหาในแท็บใหม่แล้วคัดลอก URL มาวางครับ");
+            }
+        };
+
+        function updateYoutubeQueueList() {
+            youtubeQueueList.innerHTML = '';
+            if (player && typeof player.getPlaylist === 'function' && player.getPlaylist() && player.getPlaylist().length > 0) {
+                const playlist = player.getPlaylist();
+                const currentIndex = player.getPlaylistIndex();
+
+                playlist.forEach((videoId, index) => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'youtube-queue-item';
+                    if (index === currentIndex) {
+                        listItem.classList.add('current-playing');
+                    }
+                    listItem.dataset.index = index;
+                    listItem.innerHTML = `<span class="index">${index + 1}.</span> <span>${videoId}</span>`; // Display Video ID for now
+                    listItem.onclick = () => {
+                        player.playVideoAt(parseInt(listItem.dataset.index));
+                    };
+                    youtubeQueueList.appendChild(listItem);
+                });
+                youtubeQueueList.scrollTop = youtubeQueueList.querySelector('.current-playing')?.offsetTop - youtubeQueueList.clientHeight / 2 + youtubeQueueList.querySelector('.current-playing')?.clientHeight / 2 || 0;
+            } else {
+                youtubeQueueList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">ไม่มีเพลย์ลิสต์ที่โหลดอยู่ หรือไม่สามารถแสดงชื่อเพลงได้หากไม่มี YouTube Data API Key</p>';
+            }
+        }
+
+
+        function initializeApp() {    
+            loadContent();    
+            loadCharacters();    
+            loadSettings();    
+            loadCorrections();    
+            loadApiKey();    
+            updateStats();
+            loadYouTubeIframeAPI(); // โหลด YouTube IFrame API เมื่อเริ่มต้นแอป
+            saveState(); // บันทึกสถานะเริ่มต้นของ output
+        }
+        initializeApp();
+    </script>
+</body>
+</html>
