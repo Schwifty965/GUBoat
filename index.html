@@ -13,7 +13,8 @@
         * { box-sizing: border-box; }
         body { font-family: var(--font-main); background-color: var(--bg); color: var(--text-primary); margin: 0; padding: 2rem; transition: background-color 0.3s, color 0.3s; }
         .container { width: 100%; max-width: 960px; margin: auto; display: flex; flex-direction: column; gap: 1.5rem; }
-        h2, h3 { text-align: center; margin: 0 0 1rem 0; font-weight: 600; }
+        h2, h3, h4 { text-align: center; margin: 0 0 1rem 0; font-weight: 600; }
+        h4 { margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary); }
         #main-toolbar { background: var(--surface); padding: 1rem; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
         .btn { display: inline-flex; align-items: center; gap: 0.5rem; font-family: inherit; font-size: 0.95rem; padding: 10px 18px; cursor: pointer; border: 1px solid transparent; border-radius: 8px; color: white; font-weight: 500; transition: all 0.2s ease; }
         .btn:hover { transform: translateY(-2px); }
@@ -34,14 +35,14 @@
         .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
         .card { background: var(--surface); padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
         .input-group { display: flex; gap: 0.75rem; align-items: center; }
-        .input-group input, .input-group select { width: 100%; flex-grow: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; background-color: var(--bg); color: var(--text-primary); }
-        .input-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; background-color: var(--bg); color: var(--text-primary); resize: vertical; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; flex-grow: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; background-color: var(--bg); color: var(--text-primary); }
+        .input-group textarea { resize: vertical; }
         #add-char-btn, #add-correction-btn { background-color: var(--info); }
         #save-api-key-btn { background-color: var(--primary); }
         #correction-list { list-style-type: none; padding: 0; margin-top: 1rem; max-height: 120px; overflow-y: auto; }
-        .correction-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid var(--border); position: relative; }
-        #theme-toggle { position: fixed; top: 1rem; right: 1rem; background-color: var(--surface); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; box-shadow: var(--shadow); color: var(--text-secondary); }
-        .loading-overlay, .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .correction-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px solid var(--border); position: relative; }
+        #theme-toggle { position: fixed; top: 1rem; right: 1rem; background-color: var(--surface); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; box-shadow: var(--shadow); color: var(--text-secondary); z-index: 1001;}
+        .loading-overlay, .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .loading-overlay.show, .modal-overlay.show { opacity: 1; visibility: visible; display: flex; }
         #message-modal, #confirm-modal { background-color: var(--surface); color: var(--text-primary); padding: 2rem; border-radius: var(--radius); width: 90%; max-width: 400px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         #message-content, #confirm-content { margin-bottom: 1rem; white-space: pre-wrap; text-align: center; }
@@ -73,10 +74,9 @@
         #youtube-player-container iframe { width: 100%; height: 100%; border-radius: 8px; }
         #youtube-player-controls { display: flex; justify-content: center; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
         #youtube-player-controls .btn { background-color: var(--primary); color: white; padding: 8px 15px; font-size: 0.9rem; }
-        #youtube-single-search-group { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; align-items: stretch; }
-        #api-key-status { text-align: center; margin-top: 0.5rem; font-size: 0.85rem; padding: 5px 10px; border-radius: 6px; font-weight: 500; }
-        #api-key-status.set { background-color: var(--success); color: white; }
-        #api-key-status.unset { background-color: var(--danger); color: white; }
+        .api-key-status { text-align: center; margin-top: 0.5rem; font-size: 0.85rem; padding: 5px 10px; border-radius: 6px; font-weight: 500; }
+        .api-key-status.set { background-color: var(--success); color: white; }
+        .api-key-status.unset { background-color: var(--danger); color: white; }
         #youtube-queue-list { max-height: 200px; overflow-y: auto; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius); background-color: var(--bg); margin-top: 1rem; line-height: 1.5; }
         .youtube-queue-item { padding: 8px 10px; border-bottom: 1px dashed var(--border); display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: background-color 0.2s ease; }
         .youtube-queue-item:last-child { border-bottom: none; }
@@ -85,6 +85,13 @@
         [data-theme="dark"] .youtube-queue-item.current-playing { background-color: #1a2a40; }
         .youtube-queue-item span { flex-grow: 1; }
         .youtube-queue-item .index { font-size: 0.8em; color: var(--text-secondary); min-width: 20px; text-align: right; }
+        #saved-playlists-list { max-height: 250px; overflow-y: auto; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius); background-color: var(--bg); margin-top: 1rem; }
+        .saved-playlist-item { display: flex; align-items: center; gap: 0.75rem; padding: 10px; border-bottom: 1px dashed var(--border); transition: background-color 0.2s ease; }
+        .saved-playlist-item:last-child { border-bottom: none; }
+        .saved-playlist-item:hover { background-color: rgba(108, 117, 125, 0.1); }
+        .saved-playlist-item .title { flex-grow: 1; font-weight: 500; }
+        .saved-playlist-item .actions { display: flex; gap: 0.5rem; }
+        .saved-playlist-item .actions .btn { padding: 6px 10px; font-size: 0.8rem; min-width: unset; }
     </style>
 </head>
 <body>
@@ -118,10 +125,10 @@
                 <h3>ปรับแต่งการแสดงผล</h3>
                 <div id="font-controls" class="input-group">
                     <select id="font-selector">
-                                <option value="'Sarabun', -apple-system, sans-serif">Sarabun (Default)</option>
-                                <option value="'IBM Plex Sans Thai', sans-serif">IBM Plex Sans Thai</option>
-                                <option value="'Mitr', sans-serif">Mitr</option>
-                                <option value="'Itim', cursive">Itim</option>
+                        <option value="'Sarabun', -apple-system, sans-serif">Sarabun (Default)</option>
+                        <option value="'IBM Plex Sans Thai', sans-serif">IBM Plex Sans Thai</option>
+                        <option value="'Mitr', sans-serif">Mitr</option>
+                        <option value="'Itim', cursive">Itim</option>
                     </select>
                     <button id="font-size-down" class="btn font-size-btn">-</button>
                     <span id="font-size-display">18</span>
@@ -136,10 +143,10 @@
                     <button id="titleButton" class="btn gemini-btn">คิดชื่อตอน</button>
                 </div>
                 <div class="input-group" style="flex-direction: column; align-items: stretch; margin-top: 1rem;">
-                    <textarea id="custom-ai-prompt-input" placeholder="พิมพ์คำสั่งสำหรับ AI ที่นี่ (เช่น 'สรุปเนื้อหานี้', 'แก้ไขไวยากรณ์', 'เขียนใหม่ให้กระชับ')... โดย AI จะใช้ข้อความในกล่องหลักเป็นข้อมูลประกอบ" rows="4"></textarea>
+                    <textarea id="custom-ai-prompt-input" placeholder="พิมพ์คำสั่งสำหรับ AI ที่นี่..." rows="4"></textarea>
                     <button id="send-custom-prompt-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">ส่งคำสั่ง AI</button>
                 </div>
-                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">ประวัติการตอบกลับ AI</h4>
+                <h4>ประวัติการตอบกลับ AI</h4>
                 <div id="ai-history-log">
                     <p style="text-align: center; color: var(--text-secondary);">ไม่มีประวัติการตอบกลับ AI</p>
                 </div>
@@ -149,32 +156,50 @@
                 <h3>ตั้งค่า Gemini API Key</h3>
                 <div class="input-group">
                     <input type="password" id="api-key-input" placeholder="วาง API Key ของคุณที่นี่">
-                    <button id="save-api-key-btn" class="btn">บันทึก</button>
+                    <button id="save-api-key-btn" class="btn gemini-btn">บันทึก</button>
                 </div>
-                <div id="api-key-status">
-                    </div>
-                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">เพลย์ลิสต์ YouTube</h4>
+                <div id="api-key-status" class="api-key-status"></div>
+
+                <h4>ตั้งค่า YouTube Data API Key</h4>
+                <div class="input-group">
+                    <input type="password" id="youtube-api-key-input" placeholder="วาง YouTube Data API Key ของคุณที่นี่">
+                    <button id="save-youtube-api-key-btn" class="btn gemini-btn">บันทึก</button>
+                </div>
+                <div id="youtube-api-key-status" class="api-key-status"></div>
+                
+                <h4>เพลย์ลิสต์ YouTube (เล่นทันที)</h4>
                 <div class="input-group" style="flex-direction: column; align-items: stretch;">
                     <input type="text" id="youtube-playlist-input" placeholder="วาง URL เพลย์ลิสต์ YouTube ที่นี่">
                     <button id="load-youtube-playlist-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">โหลดเพลย์ลิสต์</button>
                 </div>
-                <div id="youtube-player-container">
-                    </div>
+                <div id="youtube-player-container"></div>
                 <div id="youtube-player-controls">
                     <button id="prev-song-btn" class="btn">⏮️ ก่อนหน้า</button>
                     <button id="play-pause-btn" class="btn">▶️ เล่น</button>
                     <button id="next-song-btn" class="btn">⏭️ ถัดไป</button>
                     <button id="shuffle-playlist-btn" class="btn">🔀 สุ่ม</button>
+                    <span id="shuffle-status" style="margin-left: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);"></span>
                 </div>
-                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">เล่นเพลงเดี่ยว</h4>
+                <h4>เล่นเพลงเดี่ยว</h4>
                 <div class="input-group" style="flex-direction: column; align-items: stretch;">
-                    <input type="text" id="youtube-single-search-input" placeholder="วาง URL วิดีโอ YouTube หรือพิมพ์ชื่อเพลง">
-                    <button id="play-single-song-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">🔍 ค้นหาและเล่น</button>
+                    <input type="text" id="youtube-single-search-input" placeholder="วาง URL วิดีโอ YouTube">
+                    <button id="play-single-song-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">▶️ เล่นวิดีโอ</button>
                 </div>
-                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">คิวเพลงในเพลย์ลิสต์</h4>
+                <h4>คิวเพลงในเพลย์ลิสต์ปัจจุบัน</h4>
                 <div id="youtube-queue-list" class="card">
-                    <p style="text-align: center; color: var(--text-secondary);">ไม่มีเพลย์ลิสต์ที่โหลดอยู่ หรือไม่สามารถแสดงชื่อเพลงได้หากไม่มี YouTube Data API Key</p>
+                    <p style="text-align: center; color: var(--text-secondary);">ไม่มีเพลย์ลิสต์ที่โหลดอยู่</p>
                 </div>
+
+                <h4>จัดการเพลย์ลิสต์ที่บันทึกไว้</h4>
+                <div class="input-group" style="flex-direction: column; align-items: stretch;">
+                    <input type="text" id="save-playlist-url-input" placeholder="วาง URL เพลย์ลิสต์ YouTube ที่นี่เพื่อบันทึก">
+                    <button id="add-saved-playlist-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">➕ บันทึกเพลย์ลิสต์</button>
+                </div>
+
+                <div id="saved-playlists-list" class="card" style="margin-top: 1rem;">
+                    <p style="text-align: center; color: var(--text-secondary);">ยังไม่มีเพลย์ลิสต์ที่บันทึกไว้</p>
+                </div>
+                <button id="clear-all-saved-playlists-btn" class="btn" style="background-color: var(--danger); margin-top: 1rem;">🗑️ ล้างเพลย์ลิสต์ที่บันทึกทั้งหมด</button>
             </div>
         </div>
         <div id="dictionary-manager" class="card">
@@ -221,10 +246,7 @@
         </div>
     </div>
 
-    <!-- 
-      - โหลดไฟล์ JavaScript ทั้งหมดที่นี่
-      - type="module" ทำให้เราสามารถใช้ import/export ระหว่างไฟล์ได้
-    -->
+    <!-- เรียกใช้ไฟล์ JavaScript หลักแบบ module -->
     <script src="main.js" type="module"></script>
 </body>
 </html>
