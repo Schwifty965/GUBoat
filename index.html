@@ -223,7 +223,7 @@
                 <h3>ตั้งค่า Gemini API Key</h3>
                 <div class="input-group">
                     <input type="password" id="api-key-input" placeholder="วาง API Key ของคุณที่นี่">
-                    <button id="save-api-key-btn" class="btn">บันทakhึก</button>
+                    <button id="save-api-key-btn" class="btn">บันทึก</button>
                 </div>
                 <div id="api-key-status">
                     </div>
@@ -241,9 +241,9 @@
                     <button id="shuffle-playlist-btn" class="btn">🔀 สุ่ม</button>
                 </div>
                 <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">เล่นเพลงเดี่ยว</h4>
-                <div id="youtube-single-search-group" class="input-group">
+                <div class="input-group" style="flex-direction: column; align-items: stretch;">
                     <input type="text" id="youtube-single-search-input" placeholder="วาง URL วิดีโอ YouTube หรือพิมพ์ชื่อเพลง">
-                    <button id="play-single-song-btn" class="btn gemini-btn">🔍 ค้นหาและเล่น</button>
+                    <button id="play-single-song-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">🔍 ค้นหาและเล่น</button>
                 </div>
                 <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">คิวเพลงในเพลย์ลิสต์</h4>
                 <div id="youtube-queue-list" class="card">
@@ -1188,6 +1188,7 @@
                     youtubeQueueList.appendChild(listItem);
                 });
                 youtubeQueueList.scrollTop = youtubeQueueList.querySelector('.current-playing')?.offsetTop - youtubeQueueList.clientHeight / 2 + youtubeQueueList.querySelector('.current-playing')?.clientHeight / 2 || 0;
+
             } else {
                 youtubeQueueList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">ไม่มีเพลย์ลิสต์ที่โหลดอยู่ หรือไม่สามารถแสดงชื่อเพลงได้หากไม่มี YouTube Data API Key</p>';
             }
