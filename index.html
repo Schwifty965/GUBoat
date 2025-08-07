@@ -135,12 +135,12 @@
         #youtube-single-search-group { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; align-items: stretch; }
 
         /* API Key Status */
-        #api-key-status {
+        .api-key-status { /* ใช้ class แทน id เพื่อให้ใช้ร่วมกันได้ทั้ง 2 key */
             text-align: center; margin-top: 0.5rem; font-size: 0.85rem; padding: 5px 10px;
             border-radius: 6px; font-weight: 500;
         }
-        #api-key-status.set { background-color: var(--success); color: white; }
-        #api-key-status.unset { background-color: var(--danger); color: white; }
+        .api-key-status.set { background-color: var(--success); color: white; }
+        .api-key-status.unset { background-color: var(--danger); color: white; }
 
         /* YouTube Queue List */
         #youtube-queue-list {
@@ -159,6 +159,50 @@
         [data-theme="dark"] .youtube-queue-item.current-playing { background-color: #1a2a40; }
         .youtube-queue-item span { flex-grow: 1; }
         .youtube-queue-item .index { font-size: 0.8em; color: var(--text-secondary); min-width: 20px; text-align: right; }
+
+        /* Saved Playlists List */
+        #saved-playlists-list {
+            max-height: 250px; /* เพิ่มความสูงสำหรับรายการเพลย์ลิสต์ */
+            overflow-y: auto;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--bg);
+            margin-top: 1rem;
+        }
+
+        .saved-playlist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 10px;
+            border-bottom: 1px dashed var(--border);
+            transition: background-color 0.2s ease;
+        }
+
+        .saved-playlist-item:last-child {
+            border-bottom: none;
+        }
+
+        .saved-playlist-item:hover {
+            background-color: rgba(108, 117, 125, 0.1);
+        }
+
+        .saved-playlist-item .title {
+            flex-grow: 1;
+            font-weight: 500;
+        }
+
+        .saved-playlist-item .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .saved-playlist-item .actions .btn {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            min-width: unset; /* Override min-width from general .btn */
+        }
     </style>
 </head>
 <body>
@@ -223,11 +267,19 @@
                 <h3>ตั้งค่า Gemini API Key</h3>
                 <div class="input-group">
                     <input type="password" id="api-key-input" placeholder="วาง API Key ของคุณที่นี่">
-                    <button id="save-api-key-btn" class="btn">บันทึก</button>
+                    <button id="save-api-key-btn" class="btn gemini-btn">บันทึก</button>
                 </div>
-                <div id="api-key-status">
+                <div id="api-key-status" class="api-key-status">
                     </div>
-                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">เพลย์ลิสต์ YouTube</h4>
+
+                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">ตั้งค่า YouTube Data API Key</h4>
+                <div class="input-group">
+                    <input type="password" id="youtube-api-key-input" placeholder="วาง YouTube Data API Key ของคุณที่นี่">
+                    <button id="save-youtube-api-key-btn" class="btn gemini-btn">บันทึก</button>
+                </div>
+                <div id="youtube-api-key-status" class="api-key-status">
+                    </div>
+                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">เพลย์ลิสต์ YouTube (เล่นทันที)</h4>
                 <div class="input-group" style="flex-direction: column; align-items: stretch;">
                     <input type="text" id="youtube-playlist-input" placeholder="วาง URL เพลย์ลิสต์ YouTube ที่นี่">
                     <button id="load-youtube-playlist-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">โหลดเพลย์ลิสต์</button>
@@ -239,17 +291,28 @@
                     <button id="play-pause-btn" class="btn">▶️ เล่น</button>
                     <button id="next-song-btn" class="btn">⏭️ ถัดไป</button>
                     <button id="shuffle-playlist-btn" class="btn">🔀 สุ่ม</button>
-                </div>
+                    <span id="shuffle-status" style="margin-left: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);"></span> </div>
                 <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">เล่นเพลงเดี่ยว</h4>
                 <div class="input-group" style="flex-direction: column; align-items: stretch;">
-                    <input type="text" id="youtube-single-search-input" placeholder="วาง URL วิดีโอ YouTube หรือพิมพ์ชื่อเพลง">
-                    <button id="play-single-song-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">🔍 ค้นหาและเล่น</button>
+                    <input type="text" id="youtube-single-search-input" placeholder="วาง URL วิดีโอ YouTube">
+                    <button id="play-single-song-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">▶️ เล่นวิดีโอ</button>
                 </div>
-                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">คิวเพลงในเพลย์ลิสต์</h4>
+                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">คิวเพลงในเพลย์ลิสต์ปัจจุบัน</h4>
                 <div id="youtube-queue-list" class="card">
-                    <p style="text-align: center; color: var(--text-secondary);">ไม่มีเพลย์ลิสต์ที่โหลดอยู่ หรือไม่สามารถแสดงชื่อเพลงได้หากไม่มี YouTube Data API Key</p>
+                    <p style="text-align: center; color: var(--text-secondary);">ไม่มีเพลย์ลิสต์ที่โหลดอยู่</p>
                 </div>
-            </div>
+
+                <h4 style="text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--text-secondary);">จัดการเพลย์ลิสต์ที่บันทึกไว้</h4>
+                <div class="input-group" style="flex-direction: column; align-items: stretch;">
+                    <input type="text" id="save-playlist-url-input" placeholder="วาง URL เพลย์ลิสต์ YouTube ที่นี่เพื่อบันทึก">
+                    <button id="add-saved-playlist-btn" class="btn gemini-btn" style="margin-top: 0.75rem;">➕ บันทึกเพลย์ลิสต์</button>
+                </div>
+
+                <div id="saved-playlists-list" class="card" style="margin-top: 1rem;">
+                    <p style="text-align: center; color: var(--text-secondary);">ยังไม่มีเพลย์ลิสต์ที่บันทึกไว้</p>
+                </div>
+                <button id="clear-all-saved-playlists-btn" class="btn" style="background-color: var(--danger); margin-top: 1rem;">🗑️ ล้างเพลย์ลิสต์ที่บันทึกทั้งหมด</button>
+                </div>
         </div>
         <div id="dictionary-manager" class="card">
             <h3>จัดการพจนานุกรม</h3>
@@ -341,13 +404,27 @@
         const playPauseBtn = document.getElementById('play-pause-btn');    
         const nextSongBtn = document.getElementById('next-song-btn');    
         const shufflePlaylistBtn = document.getElementById('shuffle-playlist-btn');    
+        const shuffleStatusEl = document.getElementById('shuffle-status'); 
         const youtubeSingleSearchInput = document.getElementById('youtube-single-search-input');    
         const playSingleSongBtn = document.getElementById('play-single-song-btn');    
         const youtubeQueueList = document.getElementById('youtube-queue-list');    
         
-        const apiKeyStatus = document.getElementById('api-key-status');    
+        const apiKeyStatus = document.getElementById('api-key-status'); // Gemini API Key status element
+
+        // NEW YouTube Data API Key Elements
+        const youtubeApiKeyInput = document.getElementById('youtube-api-key-input');
+        const saveYoutubeApiKeyBtn = document.getElementById('save-youtube-api-key-btn');
+        const youtubeApiKeyStatus = document.getElementById('youtube-api-key-status'); // YouTube Data API Key status element
+
+        // NEW Saved Playlists Elements
+        const savePlaylistUrlInput = document.getElementById('save-playlist-url-input');
+        const addSavedPlaylistBtn = document.getElementById('add-saved-playlist-btn');
+        const savedPlaylistsList = document.getElementById('saved-playlists-list');
+        const clearAllSavedPlaylistsBtn = document.getElementById('clear-all-saved-playlists-btn');
 
         let player; // ตัวแปรสำหรับ YouTube Player
+        let youtubeDataApiKey = ''; // ตัวแปรสำหรับ YouTube Data API Key
+        let geminiApiKey = ''; // ตัวแปรสำหรับ Gemini API Key
 
         // สำหรับ Modal แจ้งเตือน/ยืนยัน
         const messageModalOverlay = document.getElementById('message-modal-overlay');
@@ -362,8 +439,14 @@
         let characters = [];
         let corrections = {};
         let draggedItem = null;
-        let geminiApiKey = '';
         let currentFontSize = 18;
+
+        // --- YouTube Player State Management ---
+        let currentPlaylistVideos = []; // Original order of video IDs in the current playlist
+        let shuffledPlaylistVideos = []; // Shuffled order of video IDs
+        let isPlayingShuffled = false; // Is shuffle mode active?
+        let currentPlayingIndex = 0; // Current index in the active playlist (currentPlaylistVideos or shuffledPlaylistVideos)
+        let savedPlaylists = []; // Array to store user's saved playlists [{ id, title, videoIds }]
 
         // --- Undo/Redo History ---
         let history = [];
@@ -743,11 +826,14 @@
         }
         function loadCorrections() { 
             const saved = localStorage.getItem('userCorrectionsV4'); 
-            const defaultCorrections = { "สถานการ": "สถานการณ์", "3ารถ": "สามารถ" }; 
+            const defaultCorrections = { "สถานาร": "สถานการณ์", "3ารถ": "สามารถ" }; 
             corrections = saved ? JSON.parse(saved) : defaultCorrections; 
             renderCorrections(); 
         }
         addCorrectionBtn.onclick = addCorrection;
+        wrongWordInput.addEventListener("keyup", e => { if (e.key === "Enter") addCorrection(); });
+        correctWordInput.addEventListener("keyup", e => { if (e.key === "Enter") addCorrection(); });
+
         function applyCorrections() { 
             let text = output.value; 
             const changesMade = []; 
@@ -771,7 +857,11 @@
         }
         correctTextButton.onclick = applyCorrections;
         function renderButtons() { 
-            shortcutZone.innerHTML = ''; 
+            shortcutZone.innerHTML = '<h3>ปุ่มลัดตัวละคร</h3>'; // Ensure heading is always there
+            if (characters.length === 0) {
+                shortcutZone.innerHTML += '<p style="text-align: center; color: var(--text-secondary);">ไม่มีตัวละครที่บันทึกไว้</p>';
+            }
+
             characters.forEach((char, index) => { 
                 const wrapper = document.createElement('div'); 
                 wrapper.className = 'char-btn-wrapper'; 
@@ -826,14 +916,37 @@
             const savedChars = localStorage.getItem('animeCharactersV4'); 
             if (savedChars) { 
                 characters = JSON.parse(savedChars); 
-                renderButtons(); 
             } 
+            renderButtons(); 
         }
-        shortcutZone.addEventListener("dragstart", e => { draggedItem = e.target; setTimeout(() => e.target.style.display = "none", 0); });
-        shortcutZone.addEventListener("dragend", e => { setTimeout(() => { e.target.style.display = "inline-block"; draggedItem = null; const newOrder = Array.from(shortcutZone.querySelectorAll(".char-btn")).map(btn => btn.textContent); characters = newOrder; saveCharacters(); }, 0); });
-        shortcutZone.addEventListener("dragover", e => { e.preventDefault(); const afterElement = getDragAfterElement(shortcutZone, e.clientX); if (afterElement == null) { shortcutZone.appendChild(draggedItem); } else { shortcutZone.insertBefore(draggedItem, afterElement); } });
+        shortcutZone.addEventListener("dragstart", e => { 
+            draggedItem = e.target; 
+            setTimeout(() => e.target.style.display = "none", 0); 
+        });
+        shortcutZone.addEventListener("dragend", e => { 
+            e.target.style.display = "inline-block"; // Make it visible again immediately
+            draggedItem = null; 
+            // Reorder characters array based on the new DOM order
+            const newOrderElements = Array.from(shortcutZone.querySelectorAll(".char-btn-wrapper"));
+            characters = newOrderElements.map(wrapper => wrapper.querySelector(".char-btn").textContent);
+            saveCharacters(); 
+            renderButtons(); // Re-render to ensure correct indexing and cleanup
+        });
+        shortcutZone.addEventListener("dragover", e => { 
+            e.preventDefault(); 
+            if (draggedItem && e.target.closest('.char-btn-wrapper') !== draggedItem) {
+                const afterElement = getDragAfterElement(shortcutZone, e.clientX); 
+                if (afterElement == null) { 
+                    shortcutZone.appendChild(draggedItem); 
+                } else { 
+                    shortcutZone.insertBefore(draggedItem, afterElement); 
+                } 
+            }
+        });
         function getDragAfterElement(container, x) { 
-            const draggables = [...container.querySelectorAll('.char-btn-wrapper:not(.dragging)')]; 
+            // Filter out the dragged item itself
+            const draggables = [...container.querySelectorAll('.char-btn-wrapper')].filter(el => el !== draggedItem);
+             
             return draggables.reduce((closest, child) => { 
                 const box = child.getBoundingClientRect(); 
                 const offset = x - box.left - box.width / 2; 
@@ -930,6 +1043,7 @@
                 geminiApiKey = key; 
                 updateApiKeyStatus(); // อัปเดตสถานะ API Key
                 showMessage("API Key ถูกบันทึกแล้ว!"); 
+                apiKeyInput.value = ''; // Clear input after saving
             } else {
                 showMessage("กรุณาใส่ API Key ครับ");
             }
@@ -944,29 +1058,172 @@
         }
 
         function updateApiKeyStatus() {
+            // ดึง Element นี้มาจาก HTML โดยตรง
+            const geminiApiKeyStatusEl = document.getElementById('api-key-status');
             if (geminiApiKey) {
-                apiKeyStatus.textContent = "สถานะ: API Key ตั้งค่าแล้ว ✅";
-                apiKeyStatus.className = "set";
+                geminiApiKeyStatusEl.textContent = "สถานะ: Gemini API Key ตั้งค่าแล้ว ✅";
+                geminiApiKeyStatusEl.className = "api-key-status set"; 
             } else {
-                apiKeyStatus.textContent = "สถานะ: ยังไม่ได้ตั้งค่า API Key ❌";
-                apiKeyStatus.className = "unset";
+                geminiApiKeyStatusEl.textContent = "สถานะ: ยังไม่ได้ตั้งค่า Gemini API Key ❌";
+                geminiApiKeyStatusEl.className = "api-key-status unset"; 
             }
         }
 
-        // --- YouTube Player Functions (Updated based on your old code) ---
+        // --- YouTube Data API Key Management ---
+        saveYoutubeApiKeyBtn.onclick = () => {
+            const key = youtubeApiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem('youtubeDataApiKey', key);
+                youtubeDataApiKey = key;
+                updateYoutubeDataApiKeyStatus();
+                showMessage("YouTube Data API Key ถูกบันทึกแล้ว!");
+                youtubeApiKeyInput.value = ''; // Clear input after saving
+            } else {
+                showMessage("กรุณาใส่ YouTube Data API Key ครับ");
+            }
+        };
+
+        function loadYoutubeDataApiKey() {
+            const savedKey = localStorage.getItem('youtubeDataApiKey');
+            if (savedKey) {
+                youtubeDataApiKey = savedKey;
+            }
+            updateYoutubeDataApiKeyStatus();
+        }
+
+        function updateYoutubeDataApiKeyStatus() {
+            // ดึง Element นี้มาจาก HTML โดยตรง
+            const youtubeApiKeyStatusEl = document.getElementById('youtube-api-key-status');
+            if (youtubeDataApiKey) {
+                youtubeApiKeyStatusEl.textContent = "สถานะ: YouTube Data API Key ตั้งค่าแล้ว ✅";
+                youtubeApiKeyStatusEl.className = "api-key-status set"; 
+            } else {
+                youtubeApiKeyStatusEl.textContent = "สถานะ: ยังไม่ได้ตั้งค่า YouTube Data API Key ❌";
+                youtubeApiKeyStatusEl.className = "api-key-status unset"; 
+            }
+        }
+
+        // --- YouTube Player Functions (Updated for full control) ---
+
         function getPlaylistIdFromUrl(url) {
             try {
-                const urlParams = new URLSearchParams(new URL(url).search);
-                return urlParams.get('list');
+                const urlObj = new URL(url);
+                const playlistId = urlObj.searchParams.get('list');
+                if (playlistId) return playlistId;
+                
+                // Handle shortened URLs for playlists, if any
+                // Example: youtube.com/playlist?list=PL...
+                if (urlObj.hostname.includes('youtube.com') && urlObj.pathname.includes('playlist')) {
+                    const pathParts = urlObj.pathname.split('/');
+                    if (pathParts.length > 2 && pathParts[1] === 'playlist') {
+                        return urlObj.searchParams.get('list'); // Re-check search param for list ID
+                    }
+                }
+
             } catch (e) {
-                return null; // Invalid URL
+                // Invalid URL
             }
+            return null;
         }
 
         function getVideoIdFromUrl(url) {
             const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
             return videoIdMatch && videoIdMatch[1] ? videoIdMatch[1] : null;
         }
+
+        async function getYoutubeVideoTitle(videoId, apiKey) {
+            if (!videoId || !apiKey) return null;
+            const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Error fetching YouTube video title:", errorData.error.message);
+                    return null;
+                }
+                const data = await response.json();
+                if (data.items && data.items.length > 0) {
+                    return data.items[0].snippet.title;
+                }
+            } catch (error) {
+                console.error("Error fetching YouTube video title (network/parse error):", error);
+            }
+            return null;
+        }
+
+        async function getYoutubePlaylistTitle(playlistId, apiKey) {
+            if (!playlistId || !apiKey) return null;
+            const apiUrl = `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistId}&key=${apiKey}`;
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Error fetching YouTube playlist title:", errorData.error.message);
+                    return null;
+                }
+                const data = await response.json();
+                if (data.items && data.items.length > 0) {
+                    return data.items[0].snippet.title;
+                }
+            } catch (error) {
+                console.error("Error fetching YouTube playlist title (network/parse error):", error);
+            }
+            return null;
+        }
+
+
+        // NEW: Fetch all video IDs from a playlist (handling pagination)
+        async function fetchPlaylistVideoIds(playlistId, apiKey) {
+            if (!apiKey) {
+                showMessage("กรุณาตั้งค่า YouTube Data API Key ก่อนครับ");
+                return [];
+            }
+            if (!playlistId) return [];
+
+            showLoading(true); // Show loading spinner
+            let allVideoIds = [];
+            let nextPageToken = null;
+
+            try {
+                do {
+                    const apiUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${apiKey}${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`;
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        // Check for specific API key errors
+                        if (errorData.error && errorData.error.message.includes('API key not valid')) {
+                            showMessage("YouTube Data API Key ไม่ถูกต้อง หรือไม่มีสิทธิ์เข้าถึงครับ");
+                        } else if (errorData.error && errorData.error.message.includes('quotaExceeded')) {
+                            showMessage("YouTube Data API Key ของคุณเกินโควตาการใช้งานชั่วคราวแล้วครับ");
+                        } else {
+                            showMessage(`เกิดข้อผิดพลาดในการดึงข้อมูลเพลย์ลิสต์: ${errorData.error.message || response.statusText}`);
+                        }
+                        throw new Error(`YouTube API Error: ${errorData.error.message}`);
+                    }
+                    const data = await response.json();
+
+                    if (data.items) {
+                        data.items.forEach(item => {
+                            if (item.snippet && item.snippet.resourceId && item.snippet.resourceId.videoId) {
+                                allVideoIds.push(item.snippet.resourceId.videoId);
+                            }
+                        });
+                    }
+                    nextPageToken = data.nextPageToken;
+
+                } while (nextPageToken);
+
+                return allVideoIds;
+
+            } catch (error) {
+                console.error("Error fetching playlist video IDs:", error);
+                // Error message already handled by showMessage above for API errors
+                return [];
+            } finally {
+                showLoading(false); // Hide loading spinner
+            }
+        }
+
 
         function loadYouTubeIframeAPI() {
             if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
@@ -980,61 +1237,32 @@
         }
 
         window.onYouTubeIframeAPIReady = function() {
-            const savedPlaylistUrl = localStorage.getItem('youtubePlaylistUrl');
-            if (savedPlaylistUrl) {
-                youtubePlaylistInput.value = savedPlaylistUrl;
-                const playlistId = getPlaylistIdFromUrl(savedPlaylistUrl);
-                if (playlistId) {
-                    createYouTubePlayer(playlistId);
-                } else {
-                    // If it's a single video URL saved
-                    const videoId = getVideoIdFromUrl(savedPlaylistUrl);
-                    if (videoId) {
-                        createYouTubePlayer(null, videoId);
-                    } else {
-                        // If saved URL is invalid or not a valid video/playlist, show initial message
-                        youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">กรุณาโหลดเพลย์ลิสต์หรือค้นหาเพลง</p>';
-                    }
-                }
-            } else {
-                // Show initial message if no playlist/video saved
-                youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">กรุณาโหลดเพลย์ลิสต์หรือค้นหาเพลง</p>';
-            }
+            // Player will be created only when a playlist is loaded or a single video is played
+            youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">กรุณาโหลดเพลย์ลิสต์หรือค้นหาเพลง</p>';
         };
 
-        function createYouTubePlayer(playlistId = null, videoId = null) {
+        // NEW: Function to create player with a specific video ID
+        function createYouTubePlayer(videoId) {
             if (player) {
                 player.destroy(); // Destroy old player if exists
             }
             
-            youtubePlayerContainer.innerHTML = ''; // Clear existing content (including thumbnail/message)
+            youtubePlayerContainer.innerHTML = ''; // Clear existing content
             
             const playerDiv = document.createElement('div');
             playerDiv.id = 'youtube-iframe-player'; // Assign ID for YouTube Player
             youtubePlayerContainer.appendChild(playerDiv); // Append new player div
 
-            const playerVars = {
-                autoplay: 1,
-                controls: 1,
-                modestbranding: 1,
-                rel: 0
-            };
-
-            if (playlistId) {
-                playerVars.listType = 'playlist';
-                playerVars.list = playlistId;
-            } else if (videoId) {
-                playerVars.videoId = videoId;
-            } else {
-                // If neither playlistId nor videoId is provided, revert to initial message
-                youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">กรุณาโหลดเพลย์ลิสต์หรือค้นหาเพลง</p>';
-                return;
-            }
-
             player = new YT.Player('youtube-iframe-player', {
                 height: '100%',
                 width: '100%',
-                playerVars: playerVars,
+                videoId: videoId, // Play specific video
+                playerVars: {
+                    autoplay: 1,
+                    controls: 1,
+                    modestbranding: 1,
+                    rel: 0
+                },
                 events: {
                     'onReady': onPlayerReady,
                     'onStateChange': onPlayerStateChange,
@@ -1047,18 +1275,14 @@
             event.target.playVideo();
             showMessage("เพลย์ลิสต์/เพลง YouTube โหลดและเริ่มเล่นแล้วครับ!");
             updatePlayPauseButton();
-            updateYoutubeQueueList();
+            updateShuffleStatus(); // Update initial status
+            updateYoutubeQueueList(); // Ensure queue reflects current state
         }
 
         function onPlayerStateChange(event) {
             updatePlayPauseButton();
             if (event.data === YT.PlayerState.ENDED) {
-                if (player.getPlaylist && player.getPlaylist() && player.getPlaylist().length > 0) {
-                    // YouTube API handles next video in playlist automatically
-                    updateYoutubeQueueList();
-                }
-            } else if (event.data === YT.PlayerState.PLAYING) {
-                updateYoutubeQueueList();
+                playVideoAtIndexAndHandleError(currentPlayingIndex + 1); // Auto play next in our managed queue
             }
         }
 
@@ -1070,53 +1294,111 @@
                 } else {
                     playPauseBtn.textContent = '▶️ เล่น';
                 }
+            } else {
+                playPauseBtn.textContent = '▶️ เล่น'; // Default state if player not ready
             }
         }
 
-        function onPlayerError(event) {
+        // --- Core Error Handling and Auto-Skip Logic ---
+        async function onPlayerError(event) {
             let errorMessage = "เกิดข้อผิดพลาดกับ YouTube Player: ";
+            let continueToNext = false; // Flag to decide if we should try next video
+
             switch(event.data) {
-                case 2:
-                    errorMessage += "ID วิดีโอ/เพลย์ลิสต์ไม่ถูกต้อง หรือมีข้อจำกัดอื่นๆ";
+                case 2: // Invalid ID, embedding disabled for this video, etc.
+                    errorMessage += "ID วิดีโอไม่ถูกต้อง หรือมีข้อจำกัดอื่นๆ";
+                    continueToNext = true; // Try next video
                     break;
-                case 100:
+                case 100: // Video not found
                     errorMessage += "ไม่พบวิดีโอ";
+                    continueToNext = true; // Try next video
                     break;
-                case 101:
-                case 150:
+                case 101: // Embedding disabled for this video
+                case 150: // Embedding disabled for this video (same as 101)
                     errorMessage += "วิดีโอไม่สามารถเล่นได้ในตำแหน่งปัจจุบัน (อาจมีข้อจำกัดด้านลิขสิทธิ์)";
+                    continueToNext = true; // Try next video
                     break;
                 default:
                     errorMessage += "ข้อผิดพลาดที่ไม่ทราบสาเหตุ";
+                    // For unknown errors, we might not want to auto-skip without more info
+                    break;
             }
+            
             showMessage(errorMessage);
-            console.error("YouTube Player Error:", event.data);
-            // After an error, clear the player and show the initial message
-            youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">' + errorMessage + '<br>กรุณาโหลดเพลย์ลิสต์หรือค้นหาเพลงใหม่</p>';
+            console.error("YouTube Player Error (Code:", event.data, "):", errorMessage, "Video ID:", player?.getVideoData()?.video_id);
+
+            // If it's an error we want to skip, try next video
+            if (continueToNext && currentPlaylistVideos.length > 0) {
+                // Call the play next with error handling, ensuring we pass a skip count
+                await playVideoAtIndexAndHandleError(currentPlayingIndex + 1, (player?.skipErrorCount || 0) + 1);
+            } else {
+                // If not skipping, or no more videos, reset player state
+                youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">' + errorMessage + '<br>กรุณาโหลดเพลย์ลิสต์หรือค้นหาเพลงใหม่</p>';
+                currentPlaylistVideos = [];
+                shuffledPlaylistVideos = [];
+                currentPlayingIndex = 0;
+                isPlayingShuffled = false;
+                updateYoutubeQueueList();
+                updateShuffleStatus();
+            }
         }
 
-        loadYoutubePlaylistBtn.onclick = () => {
-            const url = youtubePlaylistInput.value.trim();
-            if (!url) {
-                showMessage("กรุณาวาง URL เพลย์ลิสต์ YouTube ก่อนครับ");
+        // Updated function to play video at index, with built-in error skipping
+        async function playVideoAtIndexAndHandleError(index, skipCount = 0) {
+            const activePlaylist = isPlayingShuffled ? shuffledPlaylistVideos : currentPlaylistVideos;
+            if (activePlaylist.length === 0) {
+                showMessage("ไม่มีเพลงในคิวครับ");
                 return;
             }
-            const playlistId = getPlaylistIdFromUrl(url);
-            if (playlistId) {
-                createYouTubePlayer(playlistId);
-                localStorage.setItem('youtubePlaylistUrl', url);
-            } else {
-                showMessage("URL เพลย์ลิสต์ YouTube ไม่ถูกต้องหรือไม่พบ ID เพลย์ลิสต์ครับ");
-            }
-        };
 
-        prevSongBtn.onclick = () => {
-            if (player && typeof player.previousVideo === 'function' && player.getPlaylist && player.getPlaylist() && player.getPlaylist().length > 0) {
-                player.previousVideo();
-            } else {
-                showMessage("YouTube Player ยังไม่พร้อมใช้งาน หรือไม่มีเพลย์ลิสต์ที่กำลังเล่นอยู่ครับ");
+            // Calculate next index, handling loop
+            let nextIndex = index;
+            if (nextIndex >= activePlaylist.length) {
+                nextIndex = 0; // Loop back to start
+            } else if (nextIndex < 0) {
+                nextIndex = activePlaylist.length - 1; // Loop to end
             }
-        };
+
+            // Prevent infinite loop if all videos are broken
+            if (skipCount >= activePlaylist.length) { // Try skipping all videos once.
+                                                        // if it still fails, there's a serious problem.
+                showMessage("ไม่สามารถเล่นเพลงใดๆ ในเพลย์ลิสต์ได้ครับ อาจมีข้อจำกัดทั้งหมด");
+                player?.destroy(); // Destroy player if unable to play anything
+                youtubePlayerContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">ไม่สามารถเล่นเพลงใดๆ ในเพลย์ลิสต์ได้ครับ<br>อาจมีข้อจำกัดทั้งหมด</p>';
+                currentPlaylistVideos = []; shuffledPlaylistVideos = []; currentPlayingIndex = 0; isPlayingShuffled = false;
+                updateYoutubeQueueList(); updateShuffleStatus();
+                return;
+            }
+
+            currentPlayingIndex = nextIndex;
+            const videoIdToPlay = activePlaylist[currentPlayingIndex];
+
+            if (!videoIdToPlay) {
+                showMessage("ไม่พบวิดีโอที่ Index นี้ครับ");
+                // If videoIdToPlay is somehow null/undefined, try next one
+                await playVideoAtIndexAndHandleError(currentPlayingIndex + 1, skipCount + 1);
+                return;
+            }
+
+            // Store skipCount in player object to pass it through onPlayerError
+            if (player) {
+                player.skipErrorCount = skipCount;
+            }
+
+            if (player && typeof player.loadVideoById === 'function') {
+                player.loadVideoById(videoIdToPlay);
+                updateYoutubeQueueList(); // Update highlight immediately
+            } else {
+                // If player is not ready or not found, try to create it and load
+                createYouTubePlayer(videoIdToPlay); // This will then trigger onPlayerReady/onPlayerError
+                // If createYouTubePlayer also fails, onPlayerError will be called.
+            }
+        }
+
+
+        // Updated event handlers for controls
+        prevSongBtn.onclick = () => playVideoAtIndexAndHandleError(currentPlayingIndex - 1);
+        nextSongBtn.onclick = () => playVideoAtIndexAndHandleError(currentPlayingIndex + 1);
 
         playPauseBtn.onclick = () => {
             if (player && typeof player.getPlayerState === 'function') {
@@ -1124,76 +1406,359 @@
                 if (playerState === YT.PlayerState.PLAYING || playerState === YT.PlayerState.BUFFERING) {
                     player.pauseVideo();
                 } else {
-                    player.playVideo();
+                    // If paused, just play. If not playing (e.g. initial state, or just created),
+                    // try to play the current indexed song or first song if playlist exists.
+                    if (currentPlaylistVideos.length > 0 && (player?.getVideoData()?.video_id !== currentPlaylistVideos[currentPlayingIndex] || !player?.getVideoData()?.video_id)) {
+                         playVideoAtIndexAndHandleError(currentPlayingIndex); // Start playing current song if not already
+                    } else if (player) {
+                        player.playVideo();
+                    }
                 }
                 updatePlayPauseButton();
+            } else if (currentPlaylistVideos.length > 0) {
+                // If player doesn't exist but we have a playlist, try creating player and playing first song
+                playVideoAtIndexAndHandleError(currentPlayingIndex);
             } else {
-                showMessage("YouTube Player ยังไม่พร้อมใช้งานครับ");
-            }
-        };
-
-        nextSongBtn.onclick = () => {
-            if (player && typeof player.nextVideo === 'function' && player.getPlaylist && player.getPlaylist() && player.getPlaylist().length > 0) {
-                player.nextVideo();
-            } else {
-                showMessage("YouTube Player ยังไม่พร้อมใช้งาน หรือไม่มีเพลย์ลิสต์ที่กำลังเล่นอยู่ครับ");
+                showMessage("YouTube Player ยังไม่พร้อมใช้งานครับ หรือยังไม่ได้โหลดเพลง/เพลย์ลิสต์");
             }
         };
 
         shufflePlaylistBtn.onclick = () => {
-            if (player && typeof player.setShuffle === 'function' && player.getPlaylist && player.getPlaylist() && player.getPlaylist().length > 0) {
-                const currentShuffle = player.getShuffle();
-                player.setShuffle(!currentShuffle);
-                showMessage(`โหมดสุ่ม: ${!currentShuffle ? 'เปิด' : 'ปิด'}`);
-            } else {
-                showMessage("YouTube Player ยังไม่พร้อมใช้งาน หรือไม่มีเพลย์ลิสต์ที่กำลังเล่นอยู่ครับ");
-            }
-        };
-
-        playSingleSongBtn.onclick = () => {
-            const searchTerm = youtubeSingleSearchInput.value.trim();
-            if (!searchTerm) {
-                showMessage("กรุณาวาง URL วิดีโอ YouTube หรือพิมพ์ชื่อเพลงที่ต้องการค้นหาครับ");
+            if (currentPlaylistVideos.length <= 1) {
+                showMessage("ต้องมีอย่างน้อย 2 เพลงในเพลย์ลิสต์เพื่อใช้โหมดสุ่มครับ");
                 return;
             }
 
-            const videoId = getVideoIdFromUrl(searchTerm);
-            if (videoId) {
-                createYouTubePlayer(null, videoId);
-                localStorage.setItem('youtubePlaylistUrl', searchTerm);
+            isPlayingShuffled = !isPlayingShuffled;
+
+            if (isPlayingShuffled) {
+                // If turning shuffle ON, create a new shuffled list
+                shuffledPlaylistVideos = [...currentPlaylistVideos]; // Start with original order
+                // Fisher-Yates (Knuth) shuffle algorithm
+                for (let i = shuffledPlaylistVideos.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledPlaylistVideos[i], shuffledPlaylistVideos[j]] = [shuffledPlaylistVideos[j], shuffledPlaylistVideos[i]];
+                }
+                // Optionally, ensure the currently playing song remains first in the shuffled list
+                const currentVideoId = player?.getVideoData()?.video_id;
+                if (currentVideoId) {
+                    const currentVideoIndexInShuffled = shuffledPlaylistVideos.indexOf(currentVideoId);
+                    if (currentVideoIndexInShuffled > -1) {
+                        shuffledPlaylistVideos.splice(currentVideoIndexInShuffled, 1);
+                        shuffledPlaylistVideos.unshift(currentVideoId);
+                        currentPlayingIndex = 0; 
+                    } else {
+                        // If current song is not found in shuffled (e.g. was just skipped and not part of original)
+                        currentPlayingIndex = 0; // Start from first shuffled song
+                    }
+                } else {
+                     currentPlayingIndex = 0; // If no song playing, start from the first shuffled
+                }
             } else {
-                const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`;
-                window.open(searchUrl, '_blank');
-                showMessage("ไม่สามารถเล่นเพลงเดี่ยวจากชื่อเพลงโดยตรงได้ครับ กรุณาวาง URL วิดีโอ YouTube หรือค้นหาในแท็บใหม่แล้วคัดลอก URL มาวางครับ");
+                // If turning shuffle OFF, find the current song's index in the original playlist
+                const currentVideoId = player?.getVideoData()?.video_id;
+                if (currentVideoId) {
+                    currentPlayingIndex = currentPlaylistVideos.indexOf(currentVideoId);
+                    if (currentPlayingIndex === -1) { 
+                        currentPlayingIndex = 0;
+                    }
+                } else {
+                    currentPlayingIndex = 0; 
+                }
+            }
+            
+            updateShuffleStatus();
+            updateYoutubeQueueList();
+
+            // Load the new current song if it's different or if nothing was playing
+            const activePlaylistAfterShuffle = isPlayingShuffled ? shuffledPlaylistVideos : currentPlaylistVideos;
+            if (player && activePlaylistAfterShuffle[currentPlayingIndex] && player.getVideoData()?.video_id !== activePlaylistAfterShuffle[currentPlayingIndex]) {
+                playVideoAtIndexAndHandleError(currentPlayingIndex);
+            } else if (player && !player.getVideoData()?.video_id && activePlaylistAfterShuffle.length > 0) {
+                playVideoAtIndexAndHandleError(currentPlayingIndex);
+            }
+            
+            showMessage(`โหมดสุ่ม: ${isPlayingShuffled ? 'เปิด' : 'ปิด'}`);
+        };
+
+
+        playSingleSongBtn.onclick = async () => {
+            const urlOrId = youtubeSingleSearchInput.value.trim();
+            if (!urlOrId) {
+                showMessage("กรุณาวาง URL วิดีโอ YouTube หรือ Video ID เพื่อเล่นครับ");
+                return;
+            }
+
+            const videoId = getVideoIdFromUrl(urlOrId) || urlOrId; 
+
+            if (!youtubeDataApiKey) {
+                showMessage("กรุณาตั้งค่า YouTube Data API Key เพื่อดึงชื่อวิดีโอครับ");
+                // Allow playing even without API key, just won't show title
+            }
+            
+            // Clear current playlist and set to single video
+            currentPlaylistVideos = [videoId];
+            shuffledPlaylistVideos = [videoId]; 
+            isPlayingShuffled = false;
+            currentPlayingIndex = 0;
+
+            if (videoId) {
+                createYouTubePlayer(videoId);
+                updateShuffleStatus();
+                updateYoutubeQueueList(); // This will show the single video in queue
+                showMessage("กำลังเล่นวิดีโอเดี่ยวที่เลือกครับ!");
+                youtubeSingleSearchInput.value = ''; // Clear input after playing
+            } else {
+                showMessage("ไม่พบ Video ID ที่ถูกต้องจาก URL/ข้อความที่ระบุครับ");
             }
         };
 
-        function updateYoutubeQueueList() {
-            youtubeQueueList.innerHTML = '';
-            if (player && typeof player.getPlaylist === 'function' && player.getPlaylist() && player.getPlaylist().length > 0) {
-                const playlist = player.getPlaylist();
-                const currentIndex = player.getPlaylistIndex();
 
-                playlist.forEach((videoId, index) => {
+        async function updateYoutubeQueueList() {
+            youtubeQueueList.innerHTML = '';
+            const activePlaylist = isPlayingShuffled ? shuffledPlaylistVideos : currentPlaylistVideos;
+
+            if (activePlaylist.length === 0) {
+                youtubeQueueList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">ไม่มีเพลงในคิว</p>';
+                return;
+            }
+
+            if (!youtubeDataApiKey) {
+                youtubeQueueList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">ไม่มี YouTube Data API Key<br>ไม่สามารถแสดงชื่อเพลงได้</p>';
+                activePlaylist.forEach((videoId, index) => {
                     const listItem = document.createElement('div');
                     listItem.className = 'youtube-queue-item';
-                    if (index === currentIndex) {
+                    if (index === currentPlayingIndex) {
                         listItem.classList.add('current-playing');
                     }
                     listItem.dataset.index = index;
-                    listItem.innerHTML = `<span class="index">${index + 1}.</span> <span>${videoId}</span>`; // Display Video ID for now
-                    listItem.onclick = () => {
-                        player.playVideoAt(parseInt(listItem.dataset.index));
-                    };
+                    listItem.innerHTML = `<span class="index">${index + 1}.</span> <span>${videoId}</span>`; // Show ID if no API key
+                    listItem.onclick = () => playVideoAtIndexAndHandleError(index);
                     youtubeQueueList.appendChild(listItem);
                 });
-                youtubeQueueList.scrollTop = youtubeQueueList.querySelector('.current-playing')?.offsetTop - youtubeQueueList.clientHeight / 2 + youtubeQueueList.querySelector('.current-playing')?.clientHeight / 2 || 0;
+                return;
+            }
 
-            } else {
-                youtubeQueueList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">ไม่มีเพลย์ลิสต์ที่โหลดอยู่ หรือไม่สามารถแสดงชื่อเพลงได้หากไม่มี YouTube Data API Key</p>';
+            // Fetch titles for all videos in the active playlist
+            const fetchTitlesPromises = activePlaylist.map(videoId => getYoutubeVideoTitle(videoId, youtubeDataApiKey));
+            const titles = await Promise.all(fetchTitlesPromises);
+
+            titles.forEach((title, index) => {
+                const listItem = document.createElement('div');
+                listItem.className = 'youtube-queue-item';
+                if (index === currentPlayingIndex) {
+                    listItem.classList.add('current-playing');
+                }
+                listItem.dataset.index = index;
+                listItem.innerHTML = `<span class="index">${index + 1}.</span> <span>${title || 'Unknown Title'}</span>`; 
+                listItem.onclick = () => playVideoAtIndexAndHandleError(index);
+                youtubeQueueList.appendChild(listItem);
+            });
+            // Scroll to current playing song
+            setTimeout(() => {
+                const currentPlayingEl = youtubeQueueList.querySelector('.current-playing');
+                if (currentPlayingEl) {
+                    youtubeQueueList.scrollTop = currentPlayingEl.offsetTop - (youtubeQueueList.clientHeight / 2) + (currentPlayingEl.clientHeight / 2);
+                }
+            }, 100); // Small delay to ensure rendering
+        }
+
+        // Removed the old playVideoAtIndex, now directly call playVideoAtIndexAndHandleError for click events too
+        // function playVideoAtIndex(index) { ... }
+
+        function updateShuffleStatus() {
+            shuffleStatusEl.textContent = `(โหมดสุ่ม: ${isPlayingShuffled ? 'เปิด' : 'ปิด'})`;
+        }
+
+        // --- NEW: Saved Playlists Management ---
+
+        function saveSavedPlaylists() {
+            localStorage.setItem('savedYoutubePlaylists', JSON.stringify(savedPlaylists));
+        }
+
+        function loadSavedPlaylists() {
+            const saved = localStorage.getItem('savedYoutubePlaylists');
+            savedPlaylists = saved ? JSON.parse(saved) : [];
+            renderSavedPlaylists();
+        }
+
+        async function renderSavedPlaylists() {
+            savedPlaylistsList.innerHTML = '';
+            if (savedPlaylists.length === 0) {
+                savedPlaylistsList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">ยังไม่มีเพลย์ลิสต์ที่บันทึกไว้</p>';
+                return;
+            }
+
+            // For each saved playlist, create a list item
+            for (const playlist of savedPlaylists) { 
+                const listItem = document.createElement('div');
+                listItem.className = 'saved-playlist-item';
+                listItem.dataset.id = playlist.id; 
+
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'title';
+                let displayTitle = playlist.title;
+
+                // ถ้าไม่มีชื่อ หรือเป็นชื่อชั่วคราว ให้ลองดึงชื่อใหม่จาก API
+                if (!displayTitle || displayTitle.includes('เพลย์ลิสต์ (ID:') || playlist.videoIds === undefined || playlist.videoIds.length === 0) { 
+                    if (youtubeDataApiKey) {
+                        const newTitle = await getYoutubePlaylistTitle(playlist.id, youtubeDataApiKey);
+                        if (newTitle) {
+                            displayTitle = newTitle;
+                            playlist.title = newTitle; 
+                            // Try to re-fetch video IDs too if missing or corrupted
+                            const fetchedVideoIds = await fetchPlaylistVideoIds(playlist.id, youtubeDataApiKey);
+                            if (fetchedVideoIds.length > 0) {
+                                playlist.videoIds = fetchedVideoIds;
+                            }
+                            saveSavedPlaylists(); 
+                        } else {
+                            displayTitle = `เพลย์ลิสต์ (ID: ${playlist.id}) (ไม่พบชื่อ)`; 
+                        }
+                    } else {
+                        displayTitle = `เพลย์ลิสต์ (ID: ${playlist.id}) (ต้องใช้ API Key)`; 
+                    }
+                }
+                titleSpan.textContent = displayTitle;
+                listItem.appendChild(titleSpan);
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'actions';
+
+                const playBtn = document.createElement('button');
+                playBtn.className = 'btn gemini-btn';
+                playBtn.textContent = '▶️ เล่น';
+                playBtn.onclick = async () => {
+                    if (!youtubeDataApiKey) {
+                        showMessage("กรุณาตั้งค่า YouTube Data API Key เพื่อโหลดและเล่นเพลย์ลิสต์ครับ");
+                        return;
+                    }
+                    if (playlist.videoIds && playlist.videoIds.length > 0) {
+                        currentPlaylistVideos = playlist.videoIds;
+                        isPlayingShuffled = false;
+                        shuffledPlaylistVideos = [...currentPlaylistVideos]; 
+                        currentPlayingIndex = 0;
+                        await playVideoAtIndexAndHandleError(0); 
+                        showMessage(`เริ่มเล่นเพลย์ลิสต์ "${playlist.title || playlist.id}" แล้วครับ`);
+                    } else {
+                        showMessage(`ไม่พบวิดีโอในเพลย์ลิสต์ "${playlist.title || playlist.id}" ครับ กำลังพยายามดึงข้อมูลใหม่...`);
+                        // Try to refetch video IDs if they were somehow missing
+                        if (youtubeDataApiKey) {
+                            const refetchedVideoIds = await fetchPlaylistVideoIds(playlist.id, youtubeDataApiKey);
+                            if (refetchedVideoIds.length > 0) {
+                                playlist.videoIds = refetchedVideoIds;
+                                saveSavedPlaylists();
+                                showMessage(`ข้อมูลเพลย์ลิสต์ "${playlist.title || playlist.id}" อัปเดตแล้ว ลองเล่นอีกครั้ง`);
+                                // Now try playing after refetch
+                                currentPlaylistVideos = playlist.videoIds;
+                                isPlayingShuffled = false;
+                                shuffledPlaylistVideos = [...currentPlaylistVideos];
+                                currentPlayingIndex = 0;
+                                await playVideoAtIndexAndHandleError(0);
+                            } else {
+                                showMessage(`ไม่สามารถดึงข้อมูลวิดีโอสำหรับเพลย์ลิสต์ "${playlist.title || playlist.id}" ได้ครับ`);
+                            }
+                        }
+                    }
+                };
+                actionsDiv.appendChild(playBtn);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn';
+                deleteBtn.style.backgroundColor = 'var(--danger)';
+                deleteBtn.textContent = '🗑️️ ลบ';
+                deleteBtn.onclick = () => {
+                    showConfirm(`คุณต้องการลบเพลย์ลิสต์ "${playlist.title || playlist.id}" ออกจากรายการที่บันทึกไว้หรือไม่?`, (confirmed) => {
+                        if (confirmed) {
+                            deleteSavedPlaylist(playlist.id);
+                        }
+                    });
+                };
+                actionsDiv.appendChild(deleteBtn);
+
+                listItem.appendChild(actionsDiv);
+                savedPlaylistsList.appendChild(listItem);
             }
         }
 
+        async function addSavedPlaylist() {
+            const url = savePlaylistUrlInput.value.trim();
+            if (!url) {
+                showMessage("กรุณาวาง URL เพลย์ลิสต์ YouTube ที่นี่ครับ");
+                return;
+            }
+
+            const playlistId = getPlaylistIdFromUrl(url);
+            if (!playlistId) {
+                showMessage("URL ที่ระบุไม่ใช่ URL เพลย์ลิสต์ YouTube ที่ถูกต้องครับ");
+                return;
+            }
+
+            if (!youtubeDataApiKey) {
+                showMessage("กรุณาตั้งค่า YouTube Data API Key ก่อนบันทึกเพลย์ลิสต์ครับ");
+                return;
+            }
+
+            // Check if playlist already exists
+            const existingPlaylist = savedPlaylists.find(p => p.id === playlistId);
+            if (existingPlaylist) {
+                showMessage("เพลย์ลิสต์นี้ถูกบันทึกไว้แล้วครับ!");
+                savePlaylistUrlInput.value = '';
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const playlistTitle = await getYoutubePlaylistTitle(playlistId, youtubeDataApiKey);
+                const videoIds = await fetchPlaylistVideoIds(playlistId, youtubeDataApiKey);
+
+                if (videoIds.length === 0) {
+                     showMessage("ไม่พบวิดีโอในเพลย์ลิสต์นี้ หรือเกิดข้อผิดพลาดในการดึงข้อมูลครับ");
+                     return; // Don't save if no videos
+                }
+
+                savedPlaylists.push({
+                    id: playlistId,
+                    title: playlistTitle || `เพลย์ลิสต์ (ID: ${playlistId})`,
+                    videoIds: videoIds // Store video IDs directly for faster access later
+                });
+
+                saveSavedPlaylists();
+                renderSavedPlaylists(); // Re-render to show the new playlist
+                showMessage(`บันทึกเพลย์ลิสต์ "${playlistTitle || playlistId}" แล้วครับ!`);
+                savePlaylistUrlInput.value = ''; // Clear input after saving
+
+            } catch (error) {
+                console.error("Error adding saved playlist:", error);
+                // Error message already handled by sub-functions (fetchPlaylistVideoIds, getYoutubePlaylistTitle)
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function deleteSavedPlaylist(playlistIdToDelete) {
+            savedPlaylists = savedPlaylists.filter(p => p.id !== playlistIdToDelete);
+            saveSavedPlaylists();
+            renderSavedPlaylists();
+            showMessage("ลบเพลย์ลิสต์ที่บันทึกไว้แล้วครับ!");
+        }
+
+        clearAllSavedPlaylistsBtn.onclick = () => {
+            showConfirm("คุณต้องการล้างเพลย์ลิสต์ที่บันทึกไว้ทั้งหมดหรือไม่?", (confirmed) => {
+                if (confirmed) {
+                    savedPlaylists = [];
+                    saveSavedPlaylists();
+                    renderSavedPlaylists();
+                    showMessage("ล้างเพลย์ลิสต์ที่บันทึกไว้ทั้งหมดแล้วครับ!");
+                }
+            });
+        };
+
+        addSavedPlaylistBtn.onclick = addSavedPlaylist;
+        savePlaylistUrlInput.addEventListener("keyup", e => { if (e.key === "Enter") addSavedPlaylist(); });
+
+
+        initializeApp();
 
         function initializeApp() {    
             loadContent();    
@@ -1201,11 +1766,12 @@
             loadSettings();    
             loadCorrections();    
             loadApiKey();    
+            loadYoutubeDataApiKey(); 
+            loadSavedPlaylists(); // Load saved playlists on app start
             updateStats();
-            loadYouTubeIframeAPI(); // โหลด YouTube IFrame API เมื่อเริ่มต้นแอป
+            loadYouTubeIframeAPI(); // Load YouTube IFrame API when starting the app
             saveState(); // บันทึกสถานะเริ่มต้นของ output
         }
-        initializeApp();
     </script>
 </body>
 </html>
