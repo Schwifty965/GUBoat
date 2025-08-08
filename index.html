@@ -528,61 +528,89 @@
 
 
         // --- ส่วนที่ 2: โค้ดส่วน Speech Recognition ---
-        if ('webkitSpeechRecognition' in window) {
-            const recognition = new webkitSpeechRecognition();
-            let isRecording = false;
-            let beforeSelection = '';
-            let afterSelection = '';
-            recognition.continuous = true;
-            recognition.lang = 'th-TH';
-            recognition.interimResults = true;
-            toggleButton.onclick = () => {    
-                if (isRecording) {    
-                    recognition.stop();    
-                } else {    
-                    beforeSelection = output.value.substring(0, output.selectionStart);    
-                    afterSelection = output.value.substring(output.selectionEnd);    
-                    if (output.selectionStart === output.selectionEnd && beforeSelection.length > 0 && !beforeSelection.endsWith(' ')) {    
-                        beforeSelection += ' ';    
-                    }    
-                    recognition.start();    
-                }    
-            };
-            recognition.onresult = event => {    
-                let final_transcript = '';    
-                let interim_transcript = '';    
-                for (let i = 0; i < event.results.length; ++i) {    
-                    if (event.results[i].isFinal) {    
-                        final_transcript += event.results[i][0].transcript;    
-                    } else {    
-                        interim_transcript += event.results[i][0].transcript;    
-                    }    
-                }    
-                output.value = beforeSelection + final_transcript + interim_transcript + afterSelection;    
-                output.scrollTop = output.scrollHeight;    
-            };
-            recognition.onstart = () => {    
-                isRecording = true;    
-                toggleButton.textContent = '⏹️ หยุดพูด';    
-                toggleButton.classList.add('recording');    
-                output.focus();    
-            };
-            recognition.onend = () => {    
-                isRecording = false;    
-                toggleButton.textContent = '🎙️ เริ่มพูด';    
-                toggleButton.classList.remove('recording');    
-                output.dispatchEvent(new Event('input'));    
-                saveState(); // บันทึกสถานะหลังจากการพูดสิ้นสุด
-            };
-            recognition.onerror = event => {    
-                console.error("Speech recognition error:", event.error);    
-                isRecording = false;    
-                toggleButton.textContent = '🎙️ Error';    
-                showMessage("เกิดข้อผิดพลาดในการรับเสียง: " + event.error);    
-            };
+if ('webkitSpeechRecognition' in window) {
+    const recognition = new webkitSpeechRecognition();
+    let isRecording = false;
+    let initialSelectionStart = 0; // เก็บตำแหน่งเริ่มต้นของส่วนที่เลือกเมื่อเริ่มบันทึก
+    let initialSelectionEnd = 0;   // เก็บตำแหน่งสิ้นสุดของส่วนที่เลือกเมื่อเริ่มบันทึก
+
+    recognition.continuous = true;
+    recognition.lang = 'th-TH';
+    recognition.interimResults = true;
+
+    toggleButton.onclick = () => {    
+        if (isRecording) {    
+            recognition.stop();    
         } else {
-            document.querySelector('.container').innerHTML = '<h2>ขออภัย เบราว์เซอร์ของคุณไม่รองรับฟังก์ชันพิมพ์ด้วยเสียง</h2>';
+            // เมื่อเริ่มบันทึก ให้บันทึกตำแหน่งของส่วนที่เลือกปัจจุบัน
+            initialSelectionStart = output.selectionStart;
+            initialSelectionEnd = output.selectionEnd;
+
+            // ตรวจสอบว่ามีข้อความถูกเลือกหรือไม่
+            if (initialSelectionStart === initialSelectionEnd) {
+                // ถ้าไม่มีการเลือกข้อความ แต่เคอร์เซอร์อยู่กลางประโยค
+                // และไม่ได้อยู่ท้ายคำ ให้เพิ่มช่องว่างอัตโนมัติก่อนเริ่มพูด
+                const textBeforeCursor = output.value.substring(0, initialSelectionStart);
+                if (textBeforeCursor.length > 0 && !textBeforeCursor.endsWith(' ')) {
+                    output.value = textBeforeCursor + ' ' + output.value.substring(initialSelectionStart);
+                    // ปรับ initialSelectionStart และ initialSelectionEnd เพราะมีการเพิ่มช่องว่าง
+                    initialSelectionStart++;
+                    initialSelectionEnd++;
+                    output.selectionStart = initialSelectionStart;
+                    output.selectionEnd = initialSelectionEnd;
+                }
+            }
+            
+            recognition.start();    
+        }    
+    };
+
+    recognition.onresult = event => {    
+        let final_transcript = '';    
+        let interim_transcript = '';    
+        for (let i = 0; i < event.results.length; ++i) {    
+            if (event.results[i].isFinal) {    
+                final_transcript += event.results[i][0].transcript;    
+            } else {    
+                interim_transcript += event.results[i][0].transcript;    
+            }    
         }
+
+        // นำข้อความก่อนหน้าส่วนที่เลือก, เสียงที่รับได้, และข้อความหลังจากส่วนที่เลือกมารวมกัน
+        const textBeforeSelected = output.value.substring(0, initialSelectionStart);
+        const textAfterSelected = output.value.substring(initialSelectionEnd);
+
+        output.value = textBeforeSelected + final_transcript + interim_transcript + textAfterSelected;
+        
+        // ปรับตำแหน่งเคอร์เซอร์ให้อยู่ท้ายเสียงที่เพิ่งเพิ่มเข้าไป
+        output.selectionStart = initialSelectionStart + final_transcript.length + interim_transcript.length;
+        output.selectionEnd = output.selectionStart;
+
+        output.scrollTop = output.scrollHeight;    
+    };
+
+    recognition.onstart = () => {    
+        isRecording = true;    
+        toggleButton.textContent = '⏹️ หยุดพูด';    
+        toggleButton.classList.add('recording');    
+        output.focus();    
+    };
+    recognition.onend = () => {    
+        isRecording = false;    
+        toggleButton.textContent = '🎙️ เริ่มพูด';    
+        toggleButton.classList.remove('recording');    
+        output.dispatchEvent(new Event('input'));    
+        saveState(); // บันทึกสถานะหลังจากการพูดสิ้นสุด
+    };
+    recognition.onerror = event => {    
+        console.error("Speech recognition error:", event.error);    
+        isRecording = false;    
+        toggleButton.textContent = '🎙️ Error';    
+        showMessage("เกิดข้อผิดพลาดในการรับเสียง: " + event.error);    
+    };
+} else {
+    document.querySelector('.container').innerHTML = '<h2>ขออภัย เบราว์เซอร์ของคุณไม่รองรับฟังก์ชันพิมพ์ด้วยเสียง</h2>';
+}
 
         // --- ส่วนที่ 3: ฟังก์ชัน Gemini API ---
         function showLoading(show) { loadingOverlay.style.display = show ? 'flex' : 'none'; }
@@ -1778,3 +1806,4 @@
     </script>
 </body>
 </html>
+
